@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-    ActivityIndicator,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextStyle,
-    ViewStyle,
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextStyle,
+  ViewStyle,
 } from 'react-native';
 
 type Variant = 'primary' | 'secondary' | 'outline';
@@ -30,20 +31,35 @@ export default function Button({
   textStyle,
 }: ButtonProps) {
   const getBackgroundColor = () => {
-    if (variant === 'primary') return '#2e86de';
-    if (variant === 'secondary') return '#6c5ce7';
-    if (variant === 'outline') return 'transparent';
-    return '#2e86de';
+    if (variant === 'primary') return '#2563EB';
+    if (variant === 'secondary') return '#06B6D4';
+    return 'transparent';
   };
 
   const getTextColor = () => {
-    if (variant === 'outline') return '#2e86de';
-    return '#fff';
+    if (variant === 'outline') return '#2563EB';
+    return '#ffffff';
   };
 
   const getBorder = () => {
-    if (variant === 'outline') return { borderWidth: 1, borderColor: '#2e86de' };
+    if (variant === 'outline') return { borderWidth: 1.5, borderColor: '#2563EB' };
     return {};
+  };
+
+  const getShadow = () => {
+    if (variant === 'outline') return {};
+
+    return Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    });
   };
 
   return (
@@ -54,7 +70,8 @@ export default function Button({
         styles.button,
         { backgroundColor: getBackgroundColor() },
         getBorder(),
-        pressed && !disabled && { opacity: 0.8 },
+        getShadow(),
+        pressed && !disabled && { opacity: 0.85 },
         disabled && styles.disabled,
         style,
       ]}

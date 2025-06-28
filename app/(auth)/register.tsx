@@ -30,7 +30,7 @@ export default function RegisterScreen() {
       });
 
       Alert.alert('Sucesso', 'Cadastro realizado com sucesso');
-      router.replace('/login');
+      router.replace('/');
     } catch (err: any) {
       console.error(err);
       Alert.alert('Erro', err?.response?.data?.message || 'Erro ao cadastrar');
@@ -77,7 +77,8 @@ export default function RegisterScreen() {
       title="Voltar ao login" 
       onPress={() => router.push('/login')} 
       variant="outline" 
-      style={{ marginTop: 12 }} />
+      style={{ marginTop: 12 }} 
+    />
     </View>
   );
 }

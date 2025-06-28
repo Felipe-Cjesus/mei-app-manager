@@ -44,12 +44,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   async function logout() {
     await SecureStore.deleteItemAsync('token');
     await SecureStore.deleteItemAsync('user');
+    console.log('🔍 LOGOUT');
     setUser(null);
   }
 
   async function loadUser() {
     const token = await SecureStore.getItemAsync('token');
     const storedUser = await SecureStore.getItemAsync('user');
+
+    //teste
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     if (token && storedUser) {
       api.defaults.headers.Authorization = `Bearer ${token}`;

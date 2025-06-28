@@ -1,5 +1,6 @@
-import { Button, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import Button from '../../src/components/Button';
 
 export default function Home() {
   const { logout } = useAuth();

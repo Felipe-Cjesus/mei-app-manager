@@ -2,20 +2,29 @@
 import React from 'react';
 import { StyleSheet, Text, TextStyle } from 'react-native';
 
+type Variant =
+  | 'default'
+  | 'title'
+  | 'subtitle'
+  | 'muted'
+  | 'primary'
+  | 'danger'
+  | 'success';
+
 type TextViewProps = {
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg';
   bold?: boolean;
+  variant?: Variant;
   style?: TextStyle;
-  color?: string;
 };
 
 export default function TextView({
   children,
   size = 'md',
   bold = false,
+  variant = 'default',
   style,
-  color = '#333',
 }: TextViewProps) {
   const sizeStyle = {
     sm: styles.sm,
@@ -23,31 +32,35 @@ export default function TextView({
     lg: styles.lg,
   }[size];
 
+  const variantStyle = {
+    default: styles.default,
+    title: styles.title,
+    subtitle: styles.subtitle,
+    muted: styles.muted,
+    primary: styles.primary,
+    danger: styles.danger,
+    success: styles.success,
+  }[variant];
+
   return (
-    <Text
-      style={[
-        sizeStyle,
-        bold && styles.bold,
-        { color },
-        style,
-      ]}
-    >
+    <Text style={[sizeStyle, variantStyle, bold && styles.bold, style]}>
       {children}
     </Text>
   );
 }
 
 const styles = StyleSheet.create({
-  sm: {
-    fontSize: 12,
-  },
-  md: {
-    fontSize: 16,
-  },
-  lg: {
-    fontSize: 22,
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
+  sm: { fontSize: 12 },
+  md: { fontSize: 16 },
+  lg: { fontSize: 22 },
+
+  bold: { fontWeight: '700' },
+
+  default: { color: '#1A1C2C' }, // Azul escuro
+  title: { color: '#2979FF', fontSize: 24, fontWeight: '700' }, // Azul forte
+  subtitle: { color: '#1565C0', fontSize: 18 },
+  muted: { color: '#90A4AE' }, // Azul acinzentado
+  primary: { color: '#2979FF' },
+  danger: { color: '#D32F2F' },
+  success: { color: '#388E3C' },
 });

@@ -1,37 +1,38 @@
-import { Stack } from 'expo-router';
+// app/_layout.tsx
+import { Redirect, Slot, useSegments } from 'expo-router';
 import React from 'react';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
-
+import Splash from '../src/components/Splash';
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <AppLayout />
+      <AuthGate />
     </AuthProvider>
   );
 }
 
-function AppLayout() {
+function AuthGate() {
   const { user, loading } = useAuth();
+  const segments = useSegments();
+
+  const isInAuthGroup = segments[0] === '(auth)';
 
   if (loading) {
-    return null; // ou splash
+    // return (
+    //   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    //     <Text>Carregando...</Text>
+    //   </View>
+    // );
+    if (loading) {
+      return <Splash />;
+    }
   }
 
-  if (!user) {
-    return (
-      <Stack>
-        <Stack.Screen
-          name="(auth)/login"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="(auth)/register"
-          options={{ headerShown: false }}
-        />
-      </Stack>
-    );
+  if (!user && !isInAuthGroup) {
+    // redireciona para login se não estiver autenticado
+    return <Redirect href="/(auth)/login" />;
   }
 
-  return <Stack />;
+  return <Slot />;
 }
