@@ -13,7 +13,7 @@ type Variant =
 
 type TextViewProps = {
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   bold?: boolean;
   variant?: Variant;
   style?: TextStyle;
@@ -30,6 +30,7 @@ export default function TextView({
     sm: styles.sm,
     md: styles.md,
     lg: styles.lg,
+    xl: styles.xl,
   }[size];
 
   const variantStyle = {
@@ -53,6 +54,7 @@ const styles = StyleSheet.create({
   sm: { fontSize: 12 },
   md: { fontSize: 16 },
   lg: { fontSize: 22 },
+  xl: { fontSize: 24 },
 
   bold: { fontWeight: '700' },
 

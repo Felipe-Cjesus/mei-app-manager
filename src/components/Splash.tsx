@@ -1,17 +1,19 @@
 // src/components/Splash.tsx
 import React from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 export default function Splash() {
   return (
     <View style={styles.container}>
       <Image
         source={require('../../assets/images/mei-manager-splash.png')}
-        // style={styles.logo}
+        style={styles.logo}
         resizeMode="cover"
       />
-      <Text style={styles.title}>MEI Manager</Text>
-      <ActivityIndicator size="large" color="#3498db" style={{ marginTop: 20 }} />
+      {/* <ActivityIndicator size="large" color="#3498db" style={{ marginTop: 20 }} /> */}
     </View>
   );
 }
@@ -24,8 +26,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 300,
-    height: 300,
+    width: windowWidth,
+    height: windowHeight,
     marginBottom: 20,
   },
   title: {

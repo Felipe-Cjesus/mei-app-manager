@@ -80,7 +80,7 @@ Este repositório contém o frontend da aplicação, desenvolvido em **React Nat
 ---
 
 ## ⚙️ Estrutura de pastas
-
+```bash
 /app
 ├─ /(auth)/
 │ ├─ login.tsx
@@ -95,7 +95,7 @@ src/components
 └─ AuthContext.tsx
 /services
 └─ api.ts ← axios com baseURL da API Laravel
-
+   ```
 ---
 
 ## 🚀 Como executar

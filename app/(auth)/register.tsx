@@ -1,14 +1,17 @@
 // app/register.tsx
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, StyleSheet, View } from 'react-native';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import Input from '../../src/components/Input';
+import TextView from '../../src/components/TextView';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const [name, setName] = useState('');
+  // const [companyId, setCompanyId] = useState('');
+  // const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -41,44 +44,62 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Criar Conta</Text>
-
-      <Input
-        placeholder="Nome"
-        value={name}
-        onChangeText={setName}
+      <Image
+        source={require('../../assets/images/mei-manager-logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
       />
+      <TextView size="xl" bold style={styles.title}>
+        Criar Conta
+      </TextView>
+
+      <Input 
+        label="Nome" 
+        value={name} 
+        onChangeText={setName} 
+      />
+      {/* <Input 
+        label="Nome da empresa" 
+        value={companyId} 
+        onChangeText={setCompanyId} 
+      />
+      <Input 
+        label="CNPJ" 
+        value={companyName} 
+        onChangeText={setCompanyName} 
+      /> */}
       <Input
-        placeholder="Email"
+        label="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
       />
       <Input
-        placeholder="Senha"
+        label="Senha"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <Input
-        placeholder="Confirme a senha"
+        label="Confirme a senha"
         value={confirmation}
         onChangeText={setConfirmation}
         secureTextEntry
       />
 
-    <Button
+      <Button
         title="Cadastrar"
         onPress={handleRegister}
         loading={loading}
         style={{ marginTop: 16 }}
-    />
-    <Button 
-      title="Voltar ao login" 
-      onPress={() => router.push('/login')} 
-      variant="outline" 
-      style={{ marginTop: 12 }} 
-    />
+      />
+
+      <Button
+        title="Voltar para login"
+        onPress={() => router.push('/login')} 
+        variant="outline"
+        style={{ marginTop: 16 }}
+      />  
     </View>
   );
 }
@@ -88,12 +109,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 24,
     textAlign: 'center',
+  },
+  logo: {
+    alignSelf: 'center',
+    width: 200,
+    height: 200,
+    marginBottom: 24,
   },
 });

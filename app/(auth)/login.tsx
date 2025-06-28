@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, Image, StyleSheet, View } from 'react-native';
 
 import Button from '../../src/components/Button';
 import Input from '../../src/components/Input';
@@ -39,7 +39,12 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <TextView size="lg" bold style={styles.title}>
+      <Image
+        source={require('../../assets/images/mei-manager-logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+      <TextView size="xl" bold style={styles.title}>
         Bem-vindo de volta 👋
       </TextView>
 
@@ -66,12 +71,12 @@ export default function LoginScreen() {
         variant="primary"
       />
 
-      {/* Se quiser adicionar botão de cadastros */}
-      <Button 
-        title="Criar conta" 
-        onPress={() => router.push('/register')} 
-        variant="outline" 
-        style={{ marginTop: 12 }} />
+      <Button
+        title="Criar conta"
+        onPress={() => router.push('/(auth)/register')}
+        variant="outline"
+        style={{ marginTop: 12 }}
+      />
     </View>
   );
 }
@@ -81,10 +86,16 @@ const styles = StyleSheet.create({
     padding: 24,
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: '#f5f6fa',
+    backgroundColor: '#ffffff',
   },
   title: {
     marginBottom: 24,
     textAlign: 'center',
+  },
+  logo: {
+    alignSelf: 'center',
+    width: 200,
+    height: 200,
+    marginBottom: 24,
   },
 });
