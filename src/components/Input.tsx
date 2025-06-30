@@ -1,24 +1,14 @@
-// components/Input.tsx
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import colors from '../theme/colors';
 
-type InputProps = {
+interface InputProps extends TextInputProps {
   label?: string;
   value: string;
   onChangeText: (text: string) => void;
-  placeholder?: string;
-  secureTextEntry?: boolean;
-  keyboardType?: TextInputProps['keyboardType'];
-};
+}
 
-export default function Input({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  secureTextEntry,
-  keyboardType = 'default',
-}: InputProps) {
+export default function Input({ label, value, onChangeText, ...rest }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -27,16 +17,14 @@ export default function Input({
       <TextInput
         style={[
           styles.input,
-          isFocused && styles.inputFocused,
+          isFocused && { borderColor: colors.primary, shadowColor: colors.primary },
         ]}
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor="#999"
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        placeholderTextColor={colors.placeholder}
+        {...rest}
       />
     </View>
   );
@@ -50,25 +38,16 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: colors.textPrimary,
   },
   input: {
-    borderWidth: 2,
-    borderColor: '#ddd',
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    backgroundColor: '#fff',
-    color: '#000',
-  },
-  inputFocused: {
-    borderColor: '#2979FF',
-    backgroundColor: '#F0F7FF',
-    shadowColor: '#2979FF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: colors.background,
+    color: colors.textPrimary,
   },
 });
