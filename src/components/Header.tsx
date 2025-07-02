@@ -1,26 +1,42 @@
 // components/Header.tsx
 import { Feather } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import colors from '../theme/colors'; // Paleta azul personalizada
+import api from '../../services/api';
+import colors from '../theme/colors';
 
 type HeaderProps = {
-  companyName?: string;
-  companyId?: string;
   onNotificationPress?: () => void;
   onSettingsPress?: () => void;
 };
 
 export default function Header({
-  companyName = 'MEI Manager',
-  companyId = 'CNPJ 123456789',
   onNotificationPress,
   onSettingsPress,
 }: HeaderProps) {
+  const [company_name, setCompanyName] = useState('MEI Manager');
+  const [company_id, setCompanyId] = useState('CNPJ 000000000');
+
+  useEffect(() => {
+    async function fetchCompany() {
+      try {
+        const response = await api.get('/enterprises');
+        const { company_name, company_id } = response.data.data;
+        // console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
+        setCompanyName(company_name);
+        setCompanyId(`CNPJ: ${company_id}`);
+      } catch (error) {
+        console.error('Erro ao buscar empresa:', error);
+      }
+    }
+
+    fetchCompany();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
-        <Text style={styles.title}>{companyName}</Text>
+        <Text style={styles.title}>{company_name}</Text>
         <View style={styles.icons}>
           <TouchableOpacity onPress={onNotificationPress} style={styles.iconButton}>
             <Feather name="bell" size={22} color="#fff" />
@@ -31,8 +47,7 @@ export default function Header({
         </View>
       </View>
 
-      {/* Aqui você pode incluir mais elementos no cabeçalho futuramente */}
-      <Text style={styles.text}>{companyId}</Text>
+      <Text style={styles.text}>{company_id}</Text>
     </View>
   );
 }
@@ -41,7 +56,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.primary,
     paddingTop: 60,
-    paddingBottom: 258,
+    paddingBottom: 200,
     paddingHorizontal: 24,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,

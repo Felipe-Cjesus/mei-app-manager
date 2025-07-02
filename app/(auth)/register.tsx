@@ -10,8 +10,6 @@ import TextView from '../../src/components/TextView';
 export default function RegisterScreen() {
   const router = useRouter();
   const [name, setName] = useState('');
-  // const [companyId, setCompanyId] = useState('');
-  // const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');

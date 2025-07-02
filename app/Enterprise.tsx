@@ -1,12 +1,12 @@
 import { Text, View } from 'react-native';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
-export default function Invoice() {
+export default function Enterprise() {
   const { logout } = useAuth();
 
   return (
     <View style={{ padding: 20 }}>
-      <Text>Notas Fiscais 📄</Text>
+      <Text>Empresa 🏢</Text>
     </View>
   );
 }

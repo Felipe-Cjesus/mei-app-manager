@@ -1,23 +1,83 @@
+// app/(tabs)/index.tsx
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
 import Header from '../../src/components/Header';
+import Sidebar from '../Sidebar';
 
 export default function Home() {
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
+  const [summary, setSummary] = useState({
+    income_total: 0,
+    expense_total: 0,
+    invoice_quantity: 0,
+    balance: 0,
+  });
+
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  useEffect(() => {
+    async function fetchSummary() {
+      try {
+        const response = await api.get('/reports/monthly');
+        const { income_total, expense_total, invoice_quantity, balance } = response.data.data.total;
+        console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
+        setSummary({ income_total, expense_total, invoice_quantity, balance });
+      } catch (error) {
+        console.error('Erro ao buscar resumo:', error);
+      }
+    }
+
+    fetchSummary();
+  }, []);
+
   return (
     <View style={styles.wrapper}>
-      <Header />
+      <Header
+        onNotificationPress={() => router.push('/Notification')}
+        // onSettingsPress={() => router.push('/Sidebar')}
+        onSettingsPress={() => setSidebarVisible(true)}
+      />
+
+      <Sidebar
+        visible={sidebarVisible}
+        onClose={() => setSidebarVisible(false)}
+        onAccountPress={() => {
+          setSidebarVisible(false);
+          router.push('/Account');
+        }}
+        onEnterprisePress={() => {
+          setSidebarVisible(false);
+          router.push('/Enterprise');
+        }}
+        onLogout={() => {
+          logout();
+          setSidebarVisible(false);
+        }}
+      />
 
       <View style={styles.content}>
         <Text style={styles.sectionTitle}>Resumo</Text>
         <View style={styles.cardGrid}>
-          <Card icon="cash-outline" label="Receita" value="R$ 3.500" />
-          <Card icon="card-outline" label="Despesas" value="R$ 1.900" />
-          <Card icon="document-text-outline" label="Notas Fiscais" value="12" />
-          <Card icon="stats-chart-outline" label="Total" value="R$ 5.400" />
+          <Card icon="cash-outline" label="Receita" value={formatCurrency(summary.income_total)}  />
+          <Card icon="card-outline" label="Despesas" value={formatCurrency(summary.expense_total)} />
+          <Card icon="document-text-outline" label="Notas Fiscais" value={String(summary.invoice_quantity || 0)} />
+          {/* <Card icon="stats-chart-outline" label="Total" value={`R$ ${summary.balance.toFixed(2) || 0}`} /> */}
+          <Card icon="stats-chart-outline" label="Total" value={formatCurrency(summary.balance)} />
         </View>
       </View>
-
     </View>
   );
 }

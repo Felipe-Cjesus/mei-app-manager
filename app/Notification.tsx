@@ -1,13 +1,13 @@
 import { Text, View } from 'react-native';
-import { useAuth } from '../../contexts/AuthContext';
-import Button from '../../src/components/Button';
+import { useAuth } from '../contexts/AuthContext';
+import Button from '../src/components/Button';
 
-export default function Chart() {
+export default function Alert() {
   const { logout } = useAuth();
 
   return (
     <View style={{ padding: 20 }}>
-      <Text>Gráficos 📊</Text>
+      <Text>Notificações 🔔</Text>
       <Button title="Sair" onPress={logout} />
     </View>
   );
