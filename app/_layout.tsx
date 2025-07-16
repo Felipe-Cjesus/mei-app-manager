@@ -1,6 +1,7 @@
 // app/_layout.tsx
 import { Redirect, Slot, useSegments } from 'expo-router';
 import React from 'react';
+import Toast from 'react-native-toast-message';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import Splash from '../src/components/Splash';
 
@@ -8,6 +9,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <AuthGate />
+      <Toast />
     </AuthProvider>
   );
 }
