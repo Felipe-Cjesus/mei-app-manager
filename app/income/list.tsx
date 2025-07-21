@@ -1,23 +1,31 @@
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import api from '../../services/api';
-import Header from '../../src/components/Header';
+import Button from '../../src/components/Button';
+import Header from '../../src/components/HeaderSecundary';
 
 type IncomeItem = {
   id: number;
   description: string;
   amount: number;
-  created_at: string;
+  date: string;
+  received: boolean;
 };
 
 export default function IncomeList() {
   const [data, setData] = useState<IncomeItem[]>([]);
+  const router = useRouter();
+  const pageTitle = 'Listagem de Receitas';
 
   useEffect(() => {
     async function fetchIncome() {
       try {
-        const response = await api.get('/income');
-        setData(response.data);
+        const response = await api.get('/incomes');
+        setData(response.data.data);
+
+        console.log('🔍 response.INDEX:', JSON.stringify(response.data.data, null, 2));
+      
       } catch (error) {
         console.error('Erro ao carregar receitas:', error);
       }
@@ -28,7 +36,8 @@ export default function IncomeList() {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header title={pageTitle} />
+      {/* <Header /> */}
       <View style={styles.content}>
         <Text style={styles.title}>Receitas</Text>
 
@@ -39,10 +48,12 @@ export default function IncomeList() {
             <View style={styles.item}>
               <Text style={styles.desc}>{item.description}</Text>
               <Text style={styles.amount}>R$ {item.amount.toFixed(2)}</Text>
-              <Text style={styles.date}>{new Date(item.created_at).toLocaleDateString()}</Text>
+              <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
+              <Text style={styles.date}>{item.received ? 'Recebido' : 'Pendente'}</Text>
             </View>
           )}
         />
+        <Button title="Voltar" onPress={() => router.push('/Finance')} style={{ marginTop: 16 }} />
       </View>
     </View>
   );

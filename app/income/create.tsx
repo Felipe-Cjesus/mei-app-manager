@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
-import Header from '../../src/components/Header';
+import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
 import ToggleRecebido from '../../src/components/ToggleRecebido';
 
@@ -14,6 +14,7 @@ export default function CreateIncome() {
   const [dateReceived, setDateReceived] = useState(new Date());
   const router = useRouter();
   const [received, setReceived] = useState(false);
+  const pageTitle = 'Inclusão de Receita';
 
   const handleSubmit = () => {
     // Enviar dados da receita à API
@@ -27,8 +28,7 @@ export default function CreateIncome() {
 
   return (
     <View style={styles.container}>
-      <Header />
-
+      <Header title={pageTitle} />
       <View style={styles.content}>
         <Text style={styles.title}>Nova Receita</Text>
 

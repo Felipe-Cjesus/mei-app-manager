@@ -34,7 +34,7 @@ export default function Home() {
       try {
         const response = await api.get('/reports/monthly');
         const { income_total, expense_total, daspayment_total, invoice_quantity, balance } = response.data.data.total;
-        console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
+        //console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
         setSummary({ income_total, expense_total, daspayment_total, invoice_quantity, balance });
       } catch (error) {
         console.error('Erro ao buscar resumo:', error);
