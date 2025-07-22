@@ -1,7 +1,9 @@
+import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/HeaderSecundary';
@@ -11,19 +13,64 @@ import ToggleRecebido from '../../src/components/ToggleRecebido';
 export default function CreateIncome() {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [dateReceived, setDateReceived] = useState(new Date());
+  const [date, setDate] = useState(new Date());
   const router = useRouter();
   const [received, setReceived] = useState(false);
   const pageTitle = 'Inclusão de Receita';
 
   const handleSubmit = () => {
-    // Enviar dados da receita à API
-    Toast.show({
+
+    // Validar campos
+    if (!description || !amount || !date) {
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Todos os campos obrigatórios devem ser preenchidos.',
+      });
+      return;
+    }
+
+    // Enviar dados para API
+    const data = {
+      description,
+      amount,
+      date : formatDateToDatabase(date),
+      received,
+    };
+
+    // Enviar dados para a API usando axios
+    api.post('/incomes', data)
+    .then(response => {
+      Toast.show({
         type: 'success',
         text1: 'Sucesso!',
         text2: 'Dados salvos com sucesso ✅',
       });
-    console.log('📤 Enviando:', { description, amount, dateReceived , received});
+
+      // Limpar campos
+      setDescription('');
+      setAmount('');
+      setDate(new Date());
+      setReceived(false);
+
+      console.log('📤 Dados enviados:', response.data);
+    })
+    .catch(error => {
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Ocorreu um erro ao salvar os dados.',
+      });
+      console.error('Erro ao enviar dados:', error);
+    });
+
+    // console.log('📤 Enviando:', { description, amount, date , received});
+    console.log('📤 Dados enviados:', data);
+  };
+
+  const formatDateToDatabase = (dateString : any) => {
+    const date = new Date(dateString);
+    return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
   };
 
   return (
@@ -49,8 +96,8 @@ export default function CreateIncome() {
 
         <DateInput
           label="Data de recebimento"
-          value={dateReceived}
-          onChange={setDateReceived}
+          value={date}
+          onChange={setDate}
         />
 
         {/* <Text style={styles.label}>Pagamento Recebido?</Text>

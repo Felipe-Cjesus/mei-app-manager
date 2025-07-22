@@ -18,13 +18,22 @@ export default function IncomeList() {
   const router = useRouter();
   const pageTitle = 'Listagem de Receitas';
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
   useEffect(() => {
     async function fetchIncome() {
       try {
         const response = await api.get('/incomes');
-        setData(response.data.data);
+        setData(response.data.data.data);
 
-        console.log('🔍 response.INDEX:', JSON.stringify(response.data.data, null, 2));
+        const teste = response.data.data.data;
+
+        console.log('🔍 response.RECEITAS:', JSON.stringify(teste, null, 2));
       
       } catch (error) {
         console.error('Erro ao carregar receitas:', error);
@@ -37,7 +46,6 @@ export default function IncomeList() {
   return (
     <View style={styles.container}>
       <Header title={pageTitle} />
-      {/* <Header /> */}
       <View style={styles.content}>
         <Text style={styles.title}>Receitas</Text>
 
@@ -47,7 +55,7 @@ export default function IncomeList() {
           renderItem={({ item }) => (
             <View style={styles.item}>
               <Text style={styles.desc}>{item.description}</Text>
-              <Text style={styles.amount}>R$ {item.amount.toFixed(2)}</Text>
+              <Text style={styles.amount}> {formatCurrency(item.amount)}</Text>
               <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
               <Text style={styles.date}>{item.received ? 'Recebido' : 'Pendente'}</Text>
             </View>
