@@ -9,6 +9,7 @@ import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
 import ToggleRecebido from '../../src/components/ToggleRecebido';
+import colors from '../../src/theme/colors';
 
 export default function CreateIncome() {
   const [description, setDescription] = useState('');
@@ -125,7 +126,7 @@ export default function CreateIncome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f6fa',
+    backgroundColor: colors.surface,
   },
   content: {
     flex: 1,
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1565C0',
+    color: colors.primaryDark,
     marginBottom: 16,
   },
   label: {

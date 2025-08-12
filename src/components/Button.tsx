@@ -8,6 +8,7 @@ import {
   TextStyle,
   ViewStyle,
 } from 'react-native';
+import colors from '../theme/colors';
 
 type Variant = 'primary' | 'secondary' | 'outline';
 
@@ -31,18 +32,18 @@ export default function Button({
   textStyle,
 }: ButtonProps) {
   const getBackgroundColor = () => {
-    if (variant === 'primary') return '#2563EB';
-    if (variant === 'secondary') return '#06B6D4';
+    if (variant === 'primary') return colors.primaryBackgroundButton;
+    if (variant === 'secondary') return colors.secundaryBackgroundButton;
     return 'transparent';
   };
 
   const getTextColor = () => {
-    if (variant === 'outline') return '#2563EB';
+    if (variant === 'outline') return colors.primaryBackgroundButton;;
     return '#ffffff';
   };
 
   const getBorder = () => {
-    if (variant === 'outline') return { borderWidth: 1.5, borderColor: '#2563EB' };
+    if (variant === 'outline') return { borderWidth: 1.5, borderColor: colors.primaryBackgroundButton };
     return {};
   };
 

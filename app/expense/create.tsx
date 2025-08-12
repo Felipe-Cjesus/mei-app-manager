@@ -11,6 +11,7 @@ import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
 import ToggleType from '../../src/components/ToggleType';
+import colors from '../../src/theme/colors';
 
 export default function CreateExpense() {
   const [description, setDescription] = useState('');
@@ -158,7 +159,7 @@ export default function CreateExpense() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f6fa',
+    backgroundColor: colors.surface,
   },
   content: {
     flex: 1,
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1565C0',
+    color: colors.primaryDark,
     marginBottom: 16,
   },
   label: {
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'lightgray',
   },
   fileButton: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.border,
     padding: 12,
     borderRadius: 6,
     marginTop: 12,
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
   },
   fileButtonText: { color: '#333', fontWeight: '600' },
   submitButton: {
-    backgroundColor: '#1565C0',
+    backgroundColor: colors.primaryDark,
     padding: 14,
     borderRadius: 6,
     marginTop: 20,

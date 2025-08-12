@@ -11,6 +11,7 @@ import {
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import Header from '../../src/components/HeaderSecundary';
+import colors from '../../src/theme/colors';
 
 type ExpenseItem = {
   id: number;
@@ -150,7 +151,7 @@ export default function ExpenseList() {
         <Text style={styles.title}>Despesas</Text>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#1565C0" />
+          <ActivityIndicator size="large" color={colors.primaryDark} />
         ) : (
           <>
             <FlatList
@@ -188,7 +189,7 @@ export default function ExpenseList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f6fa',
+    backgroundColor: colors.surface,
   },
   content: {
     flex: 1,
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1565C0',
+    color: colors.primaryDark,
     marginBottom: 16,
   },
   item: {
@@ -236,14 +237,14 @@ const styles = StyleSheet.create({
     // backgroundColor: '#e0e0e0',
   },
   pageNumber: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: colors.border,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,
     marginHorizontal: 4,
   },
   pageNumberActive: {
-    backgroundColor: '#1565C0',
+    backgroundColor: colors.primaryDark,
   },
   pageNumberText: {
     color: '#333',
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   pageButtonText: {
-    color: '#1565C0',
+    color: colors.primaryDark,
     fontWeight: '600',
   },
 });

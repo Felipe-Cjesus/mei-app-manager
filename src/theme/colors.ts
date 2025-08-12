@@ -2,6 +2,8 @@
 const colors = {
     primary: '#2979FF',         // Azul principal
     primaryDark: '#1565C0',     // Azul escuro
+    primaryBackgroundButton: '#2563EB',
+    secundaryBackgroundButton: '#06B6D4',
     primaryLight: '#E3F2FD',    // Azul claro para fundo
     secondary: '#00BCD4',       // Cor de destaque (ex: botões secundários)
     accent: '#82B1FF',          // Azul claro para detalhes

@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import Header from '../../src/components/Header';
+import colors from '../../src/theme/colors';
 import Sidebar from '../Sidebar';
 
 export default function Home() {
@@ -102,7 +103,7 @@ export default function Home() {
 function Card({ icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <View style={styles.card}>
-      <Ionicons name={icon} size={24} color="#1565C0" />
+      <Ionicons name={icon} size={24} color={colors.primaryDark} />
       <Text style={styles.cardLabel}>{label}</Text>
       <Text style={styles.cardValue}>{value}</Text>
     </View>
@@ -112,7 +113,7 @@ function Card({ icon, label, value }: { icon: any; label: string; value: string 
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#f5f6fa',
+    backgroundColor: colors.surface,
   },
   content: {
     flex: 1,
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   cardValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2979FF',
+    color: colors.primary,
     marginTop: 4,
   },
 });
