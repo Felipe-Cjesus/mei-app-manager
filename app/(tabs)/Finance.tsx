@@ -3,10 +3,12 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import Header from '../../src/components/Header';
+import Header from '../../src/components/HeaderSecundary';
 import colors from '../../src/theme/colors';
 
 export default function Finance() {
   const router = useRouter();
+  const pageTitle = 'Gerenciador Financeiro 💰';
 
   const sections = [
     {
@@ -29,11 +31,13 @@ export default function Finance() {
   return (
     <View style={styles.container}>
       {/* <Header /> */}
-      <View style={styles.containerHeader}>
+      {/* <View style={styles.containerHeader}>
         <Text style={styles.title}>Gerenciador Financeiro 💰</Text>
         <View style={styles.topRow}>
         </View>
-      </View>
+      </View> */}
+
+      <Header title={pageTitle} />
 
       <View style={styles.content}>
         {sections.map((section) => (

@@ -1,4 +1,5 @@
 // contexts/AuthContext.tsx
+import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await SecureStore.deleteItemAsync('user');
     console.log('🔍 LOGOUT');
     setUser(null);
+    router.replace('/login');
   }
 
   async function loadUser() {
@@ -71,6 +73,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     loadUser();
+
+    // Adiciona interceptor de resposta
+    const interceptor = api.interceptors.response.use(
+      response => response,
+      async error => {
+        if (error.response?.status === 401) {
+          console.warn('⚠️ Sessão expirada, fazendo logout...');
+          await logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    // Remove interceptor ao desmontar
+    return () => {
+      api.interceptors.response.eject(interceptor);
+    };
   }, []);
 
   return (

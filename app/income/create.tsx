@@ -109,9 +109,14 @@ export default function CreateIncome() {
         /> */}
         <ToggleRecebido value={received} onChange={setReceived} />
 
-        <Button title="Salvar" onPress={handleSubmit} style={{ marginTop: 16 }} />
+        <Button title="Salvar" 
+                onPress={handleSubmit} 
+                style={{ marginTop: 16 }} />
 
-        <Button title="Voltar" onPress={() => router.push('/Finance')} style={{ marginTop: 16 }} />
+        <Button title="Voltar" 
+                onPress={() => router.push('/Finance')} 
+                variant="outline" 
+                style={{ marginTop: 16 }} />
       </View>
     </View>
   );
@@ -127,7 +132,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#1565C0',
     marginBottom: 16,

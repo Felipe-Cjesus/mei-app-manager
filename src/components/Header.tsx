@@ -16,15 +16,27 @@ export default function Header({
 }: HeaderProps) {
   const [company_name, setCompanyName] = useState('MEI Manager');
   const [company_id, setCompanyId] = useState('CNPJ 000000000');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
+  const [number, setNumber] = useState('');
+  const [contact, setContact] = useState('');
+  const [social_media, setSocial_media] = useState('');
 
   useEffect(() => {
     async function fetchCompany() {
       try {
         const response = await api.get('/enterprises');
-        const { company_name, company_id } = response.data.data;
+        const { company_name, company_id, state, city, address, number, contact, social_media } = response.data.data;
         // console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
         setCompanyName(company_name);
         setCompanyId(`CNPJ: ${company_id}`);
+        setState(state);
+        setCity(city);
+        setAddress(address);
+        setNumber(number);
+        setContact(contact);
+        setSocial_media(social_media);
       } catch (error) {
         console.error('Erro ao buscar empresa:', error);
       }
@@ -48,8 +60,8 @@ export default function Header({
       </View>
 
       <Text style={styles.text}>{company_id}</Text>
-      <Text style={styles.subtext}>Criciúma - SC</Text>
-      <Text style={styles.subtext}>Av. Centenário, 300</Text>
+      <Text style={styles.subtext}>{state} - {city}</Text>
+      <Text style={styles.subtext}>{address}, {number}</Text>
     </View>
   );
 }
