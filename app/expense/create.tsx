@@ -12,7 +12,7 @@ import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
 import ToggleType from '../../src/components/ToggleType';
 
-export default function CreateIncome() {
+export default function CreateExpense() {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
