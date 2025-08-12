@@ -48,6 +48,8 @@ export default function Header({
       </View>
 
       <Text style={styles.text}>{company_id}</Text>
+      <Text style={styles.subtext}>Criciúma - SC</Text>
+      <Text style={styles.subtext}>Av. Centenário, 300</Text>
     </View>
   );
 }
@@ -56,7 +58,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.primary,
     paddingTop: 60,
-    paddingBottom: 150,
+    paddingBottom: 100,
     paddingHorizontal: 24,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
@@ -72,6 +74,10 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   text: {
+    fontSize: 18,
+    color: '#fff',
+  },
+  subtext: {
     fontSize: 18,
     color: '#fff',
   },

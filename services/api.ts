@@ -1,8 +1,11 @@
 // services/api.ts
 import axios from 'axios';
 
+const PRODUCTION_BASE_URL = 'https://mei-api-production.up.railway.app/api'; 
+const DEVELOPMENT_BASE_URL = 'https://78cc69cbd05f.ngrok-free.app/api';      // ngrok tunel
+
 const api = axios.create({
-  baseURL: 'https://mei-api-production.up.railway.app/api',
+  baseURL: DEVELOPMENT_BASE_URL, 
   headers: {
     Accept: 'application/json',
   },

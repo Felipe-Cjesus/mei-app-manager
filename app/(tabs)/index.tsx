@@ -21,9 +21,11 @@ export default function Home() {
 
   const [summary, setSummary] = useState({
     income_total: 0,
+    income_total_pending: 0,
     expense_total: 0,
     daspayment_total: 0,
     invoice_quantity: 0,
+    invoice_total: 0,
     balance: 0,
   });
 
@@ -33,9 +35,9 @@ export default function Home() {
     async function fetchSummary() {
       try {
         const response = await api.get('/reports/monthly');
-        const { income_total, expense_total, daspayment_total, invoice_quantity, balance } = response.data.data.total;
+        const { income_total, income_total_pending, expense_total, daspayment_total, invoice_quantity, invoice_total, balance } = response.data.data.total;
         //console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
-        setSummary({ income_total, expense_total, daspayment_total, invoice_quantity, balance });
+        setSummary({ income_total, income_total_pending, expense_total, daspayment_total, invoice_quantity, invoice_total, balance });
       } catch (error) {
         console.error('Erro ao buscar resumo:', error);
       }
@@ -72,11 +74,13 @@ export default function Home() {
       <View style={styles.content}>
         <Text style={styles.sectionTitle}>Resumo {new Date().getFullYear()}</Text>
         <View style={styles.cardGrid}>
-          <Card icon="cash-outline" label="Receita" value={formatCurrency(summary.income_total)}  />
-          <Card icon="card-outline" label="Despesas" value={formatCurrency(summary.expense_total + summary.daspayment_total)} />
-          <Card icon="document-text-outline" label="Notas Fiscais" value={String(summary.invoice_quantity || 0)} />
+          <Card icon="cash-outline" label="Receita recebida" value={formatCurrency(summary.income_total)}  />
+          <Card icon="warning-outline" label="Receita pendente" value={formatCurrency(summary.income_total_pending)}  />
+          <Card icon="wallet-outline" label="Despesas" value={formatCurrency(summary.expense_total + summary.daspayment_total)} />
           {/* <Card icon="stats-chart-outline" label="Total" value={`R$ ${summary.balance.toFixed(2) || 0}`} /> */}
           <Card icon="stats-chart-outline" label="Total" value={formatCurrency(summary.balance)} />
+          <Card icon="documents-outline" label="Quantidade NFs" value={String(summary.invoice_quantity || 0)} />
+          <Card icon="document-text-outline" label="Notas Fiscais" value={formatCurrency(summary.invoice_total || 0)} />
         </View>
       </View>
     </View>

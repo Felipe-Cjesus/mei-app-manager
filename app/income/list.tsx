@@ -1,6 +1,13 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import Header from '../../src/components/HeaderSecundary';
@@ -15,8 +22,12 @@ type IncomeItem = {
 
 export default function IncomeList() {
   const [data, setData] = useState<IncomeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
   const router = useRouter();
   const pageTitle = 'Listagem de Receitas';
+  const perPage = 10;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -25,23 +36,112 @@ export default function IncomeList() {
     }).format(value);
   };
 
-  useEffect(() => {
-    async function fetchIncome() {
-      try {
-        const response = await api.get('/incomes');
-        setData(response.data.data.data);
-
-        const teste = response.data.data.data;
-
-        console.log('🔍 response.RECEITAS:', JSON.stringify(teste, null, 2));
-      
-      } catch (error) {
-        console.error('Erro ao carregar receitas:', error);
+  const getPaginationPages = (current: number, total: number, maxVisible: number = 3) => {
+    const pages: (number | string)[] = [];
+  
+    if (total <= maxVisible) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      const middle = Math.floor(maxVisible / 2);
+      let start = current - middle;
+      let end = current + middle;
+  
+      if (start < 1) {
+        start = 1;
+        end = maxVisible;
+      } else if (end > total) {
+        end = total;
+        start = total - maxVisible + 1;
+      }
+  
+      if (start > 1) {
+        pages.push(1);
+        if (start > 2) pages.push('...');
+      }
+  
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+  
+      if (end < total) {
+        if (end < total - 1) pages.push('...');
+        pages.push(total);
       }
     }
+  
+    return pages;
+  };
 
-    fetchIncome();
+  async function fetchIncome(pageNumber = 1) {
+    try {
+      setLoading(true);
+      const response = await api.get(`/incomes?page=${pageNumber}&perPage=${perPage}`);
+      const items: IncomeItem[] = response.data.data.data;
+      const currentPage = response.data.data.current_page;
+      const last = response.data.data.last_page;
+
+      setData(items);
+      setPage(currentPage);
+      setLastPage(last);
+    } catch (error) {
+      console.error('Erro ao carregar receitas:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchIncome(1);
   }, []);
+
+  const handlePageChange = (targetPage: number) => {
+    if (targetPage >= 1 && targetPage <= lastPage && targetPage !== page) {
+      fetchIncome(targetPage);
+    }
+  };
+
+  const renderPagination = () => {
+    const pagesToShow = getPaginationPages(page, lastPage, 3);
+  
+    return (
+      // <ScrollView horizontal contentContainerStyle={styles.paginationContainer}>
+      <View style={styles.paginationContainer}>
+        <TouchableOpacity onPress={() => handlePageChange(1)} style={styles.pageButton}>
+          <Text style={styles.pageButtonText}>« Primeira</Text>
+        </TouchableOpacity>
+  
+        {pagesToShow.map((pg, index) => {
+          if (pg === '...') {
+            return (
+              <Text key={`dots-${index}`} style={{ marginHorizontal: 6, fontSize: 18 }}>
+                ...
+              </Text>
+            );
+          }
+  
+          return (
+            <TouchableOpacity
+              key={`page-${pg}`}
+              onPress={() => handlePageChange(Number(pg))}
+              style={[
+                styles.pageNumber,
+                pg === page && styles.pageNumberActive,
+              ]}
+            >
+              <Text style={pg === page ? styles.pageNumberTextActive : styles.pageNumberText}>
+                {pg}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+  
+        <TouchableOpacity onPress={() => handlePageChange(lastPage)} style={styles.pageButton}>
+          <Text style={styles.pageButtonText}>Última »</Text>
+        </TouchableOpacity>
+      {/* </ScrollView> */}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -49,19 +149,37 @@ export default function IncomeList() {
       <View style={styles.content}>
         <Text style={styles.title}>Receitas</Text>
 
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.desc}>{item.description}</Text>
-              <Text style={styles.amount}> {formatCurrency(item.amount)}</Text>
-              <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
-              <Text style={styles.date}>{item.received ? 'Recebido' : 'Pendente'}</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#1565C0" />
+        ) : (
+          <>
+            <FlatList
+              data={data}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <View style={styles.item}>
+                  <Text style={styles.desc}>{item.description}</Text>
+                  <Text style={styles.amount}>{formatCurrency(item.amount)}</Text>
+                  <Text style={styles.date}>
+                    {new Date(item.date).toLocaleDateString()}
+                  </Text>
+                  <Text style={styles.date}>
+                    {item.received ? 'Recebido' : 'Pendente'}
+                  </Text>
+                </View>
+              )}
+            />
+            <View style={styles.paginationContainer}>
+            {renderPagination()}
             </View>
-          )}
+          </>
+        )}
+
+        <Button
+          title="Voltar"
+          onPress={() => router.push('/Finance')}
+          style={{ marginTop: 16 }}
         />
-        <Button title="Voltar" onPress={() => router.push('/Finance')} style={{ marginTop: 16 }} />
       </View>
     </View>
   );
@@ -107,5 +225,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
     marginTop: 2,
+  },
+  paginationContainer: {
+    // padding: 2,
+    flexDirection: 'row',
+    marginTop: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'nowrap',
+    // backgroundColor: '#e0e0e0',
+  },
+  pageNumber: {
+    backgroundColor: '#e0e0e0',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginHorizontal: 4,
+  },
+  pageNumberActive: {
+    backgroundColor: '#1565C0',
+  },
+  pageNumberText: {
+    color: '#333',
+    fontWeight: '600',
+  },
+  pageNumberTextActive: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  pageButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  pageButtonText: {
+    color: '#1565C0',
+    fontWeight: '600',
   },
 });
