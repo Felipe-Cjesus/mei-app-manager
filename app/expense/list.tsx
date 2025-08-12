@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -10,7 +11,9 @@ import {
 } from 'react-native';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
+import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/HeaderSecundary';
+import Input from '../../src/components/Input';
 import colors from '../../src/theme/colors';
 
 type ExpenseItem = {
@@ -30,12 +33,20 @@ export default function ExpenseList() {
   const pageTitle = 'Listagem de Despesas';
   const perPage = 10;
 
+  const [nameFilter, setNameFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState<Date | null>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
   };
+
+  const formatDateToDatabase = (dateString : any) => {
+    const date = new Date(dateString);
+    return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
+};
 
   const getPaginationPages = (current: number, total: number, maxVisible: number = 3) => {
     const pages: (number | string)[] = [];
@@ -73,10 +84,23 @@ export default function ExpenseList() {
     return pages;
   };
 
-  async function fetchExpense(pageNumber = 1) {
+  async function fetchExpense(pageNumber = 1, date='', description='') {
     try {
       setLoading(true);
-      const response = await api.get(`/expenses?page=${pageNumber}&perPage=${perPage}`);
+      const dateFormatted = date;
+      const descriptionFormatted = description;
+      let dateQuery = "";
+      let descriptionQuery = "";
+
+      if(dateFormatted !== '') {
+        dateQuery = "&date=" + dateFormatted;
+      }
+      if(descriptionFormatted !== '') {
+        descriptionQuery = "&description=" + descriptionFormatted;
+      }
+
+      const response = await api.get(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery);
+    //   console.log(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
       const items: ExpenseItem[] = response.data.data.data;
       const currentPage = response.data.data.current_page;
       const last = response.data.data.last_page;
@@ -84,6 +108,8 @@ export default function ExpenseList() {
       setData(items);
       setPage(currentPage);
       setLastPage(last);
+      setNameFilter('');
+      setDateFilter(null);
     } catch (error) {
       console.error('Erro ao carregar despesas:', error);
     } finally {
@@ -103,7 +129,7 @@ export default function ExpenseList() {
 
   const renderPagination = () => {
     const pagesToShow = getPaginationPages(page, lastPage, 3);
-  
+
     return (
       // <ScrollView horizontal contentContainerStyle={styles.paginationContainer}>
       <View style={styles.paginationContainer}>
@@ -148,6 +174,23 @@ export default function ExpenseList() {
     <View style={styles.container}>
       <Header title={pageTitle} />
       <View style={styles.content}>
+        {/* <Text style={styles.title}>Filtros</Text> */}
+        {/* <View style={styles.filterContainer}> */}
+        <Input
+            placeholder="Filtrar por Descrição..."
+            value={nameFilter}
+            onChangeText={setNameFilter}
+        />
+        
+        <DateInput
+            value={dateFilter}
+            onChange={(selectedDate) => {
+                if (selectedDate) setDateFilter(selectedDate);
+            }}
+        />
+        {/* </View> */}
+        <Button title="Procurar" onPress={() => fetchExpense(1, formatDateToDatabase(dateFilter), nameFilter)} style={styles.filterButton}/>
+        
         <Text style={styles.title}>Despesas</Text>
 
         {loading ? (
@@ -261,5 +304,18 @@ const styles = StyleSheet.create({
   pageButtonText: {
     color: colors.primaryDark,
     fontWeight: '600',
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  filterButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginBottom: 8,
   },
 });

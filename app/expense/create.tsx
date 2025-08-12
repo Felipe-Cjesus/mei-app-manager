@@ -104,7 +104,7 @@ export default function CreateExpense() {
     <View style={styles.container}>
       <Header title={pageTitle} />
       <View style={styles.content}>
-        <Text style={styles.title}>Nova Receita</Text>
+        <Text style={styles.title}>Nova Despesa</Text>
 
         <Input
           label="Descrição"
