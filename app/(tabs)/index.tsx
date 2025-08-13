@@ -1,10 +1,14 @@
 // app/(tabs)/index.tsx
 import { Ionicons } from '@expo/vector-icons';
+import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import Button from '../../src/components/Button';
+import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/Header';
 import colors from '../../src/theme/colors';
 import Sidebar from '../Sidebar';
@@ -12,6 +16,9 @@ import Sidebar from '../Sidebar';
 export default function Home() {
   const router = useRouter();
   const { logout } = useAuth();
+  const [yearReference, setYearReference] = useState<Date | null>(null);
+
+  const [titleYear, setTitleYear] = useState('');
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -19,6 +26,12 @@ export default function Home() {
       currency: 'BRL',
     }).format(value);
   };
+
+  const formatDateToDatabase = (dateString : any) => {
+    const date = new Date(dateString);
+    // return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
+    return format(date, 'yyyy');
+    };
 
   const [summary, setSummary] = useState({
     income_total: 0,
@@ -32,10 +45,18 @@ export default function Home() {
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
-  useEffect(() => {
-    async function fetchSummary() {
+  // useEffect(() => {
+    async function fetchSummary(year='') {
       try {
-        const response = await api.get('/reports/monthly');
+        const yearFormatted = year;
+        let yearQuery = "";
+        if(yearFormatted !== '') {
+          yearQuery = "?year=" + yearFormatted;
+        }
+
+        setTitleYear(year);
+
+        const response = await api.get('/reports/monthly'+yearQuery);
         const { income_total, 
                 income_total_pending,
                 expense_total, 
@@ -43,7 +64,10 @@ export default function Home() {
                 invoice_quantity, 
                 invoice_total, 
                 balance } = response.data.data.total;
+
         //console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
+        console.log('/reports/monthly'+yearQuery);
+
         setSummary({ income_total, 
                      income_total_pending, 
                      expense_total, 
@@ -51,11 +75,20 @@ export default function Home() {
                      invoice_quantity, 
                      invoice_total, 
                      balance });
+                    
+        if(yearFormatted !== '') {
+          Toast.show({
+            type: 'success',
+            text1: 'Sucesso!',
+            text2: 'Resumo atualizado com sucesso ✅',
+          });
+        }
       } catch (error) {
         console.error('Erro ao buscar resumo:', error);
       }
     }
 
+  useEffect(() => {
     fetchSummary();
   }, []);
 
@@ -85,7 +118,17 @@ export default function Home() {
       />
 
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Resumo {new Date().getFullYear()}</Text>
+        {/* <Text style={styles.sectionTitle}>Resumo {new Date().getFullYear()}</Text> */}
+        <Text style={styles.sectionTitle}>Resumo {titleYear ? titleYear : new Date().getFullYear()}</Text>
+
+        <DateInput
+            value={yearReference}
+            onChange={(selectedDate) => {
+                if (selectedDate) setYearReference(selectedDate);
+            }}
+        />
+        <Button title="Filtrar" onPress={() => fetchSummary(formatDateToDatabase(yearReference))} style={styles.filterButton}/>
+
         <View style={styles.cardGrid}>
           <Card icon="cash-outline" label="Receita recebida" value={formatCurrency(summary.income_total)}  />
           <Card icon="warning-outline" label="Receita pendente" value={formatCurrency(summary.income_total_pending)}  />
@@ -153,5 +196,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.primary,
     marginTop: 4,
+  },
+  filterButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginBottom: 8,
   },
 });

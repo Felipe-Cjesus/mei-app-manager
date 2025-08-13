@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -8,9 +9,12 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
+import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/HeaderSecundary';
+import Input from '../../src/components/Input';
 import colors from '../../src/theme/colors';
 
 type IncomeItem = {
@@ -30,12 +34,20 @@ export default function IncomeList() {
   const pageTitle = 'Listagem de Receitas';
   const perPage = 10;
 
+  const [nameFilter, setNameFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState<Date | null>(null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
   };
+
+  const formatDateToDatabase = (dateString : any) => {
+    const date = new Date(dateString);
+    return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
+};
 
   const getPaginationPages = (current: number, total: number, maxVisible: number = 3) => {
     const pages: (number | string)[] = [];
@@ -73,10 +85,26 @@ export default function IncomeList() {
     return pages;
   };
 
-  async function fetchIncome(pageNumber = 1) {
+  async function fetchIncome(pageNumber = 1, date='', description='') {
     try {
       setLoading(true);
-      const response = await api.get(`/incomes?page=${pageNumber}&perPage=${perPage}`);
+      
+      const dateFormatted = date;
+      const descriptionFormatted = description;
+      let dateQuery = "";
+      let descriptionQuery = "";
+      let lgToast = false;
+
+      if(dateFormatted !== '') {
+        dateQuery = "&date=" + dateFormatted;
+        lgToast = true;
+      }
+      if(descriptionFormatted !== '') {
+        descriptionQuery = "&description=" + descriptionFormatted;
+        lgToast = true;
+      }
+
+      const response = await api.get(`/incomes?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
       const items: IncomeItem[] = response.data.data.data;
       const currentPage = response.data.data.current_page;
       const last = response.data.data.last_page;
@@ -84,6 +112,15 @@ export default function IncomeList() {
       setData(items);
       setPage(currentPage);
       setLastPage(last);
+      
+      if(lgToast) {
+        Toast.show({
+          type: 'success',
+          text1: 'Sucesso!',
+          text2: 'Listagem atualizada com sucesso ✅',
+        });
+      }
+
     } catch (error) {
       console.error('Erro ao carregar receitas:', error);
     } finally {
@@ -148,6 +185,21 @@ export default function IncomeList() {
     <View style={styles.container}>
       <Header title={pageTitle} />
       <View style={styles.content}>
+
+        <Input
+              placeholder="Filtrar por Descrição..."
+              value={nameFilter}
+              onChangeText={setNameFilter}
+          />
+          
+          <DateInput
+              value={dateFilter}
+              onChange={(selectedDate) => {
+                  if (selectedDate) setDateFilter(selectedDate);
+              }}
+          />
+          <Button title="Filtrar" onPress={() => fetchIncome(1, formatDateToDatabase(dateFilter), nameFilter)} style={styles.filterButton}/>
+
         <Text style={styles.title}>Receitas</Text>
 
         {loading ? (
@@ -261,5 +313,12 @@ const styles = StyleSheet.create({
   pageButtonText: {
     color: colors.primaryDark,
     fontWeight: '600',
+  },
+  filterButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginBottom: 8,
   },
 });

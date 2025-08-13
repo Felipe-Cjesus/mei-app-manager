@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
@@ -46,7 +47,7 @@ export default function ExpenseList() {
   const formatDateToDatabase = (dateString : any) => {
     const date = new Date(dateString);
     return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
-};
+ };
 
   const getPaginationPages = (current: number, total: number, maxVisible: number = 3) => {
     const pages: (number | string)[] = [];
@@ -87,19 +88,23 @@ export default function ExpenseList() {
   async function fetchExpense(pageNumber = 1, date='', description='') {
     try {
       setLoading(true);
+      
       const dateFormatted = date;
       const descriptionFormatted = description;
       let dateQuery = "";
       let descriptionQuery = "";
+      let lgToast = false;
 
       if(dateFormatted !== '') {
         dateQuery = "&date=" + dateFormatted;
+        lgToast = true;
       }
       if(descriptionFormatted !== '') {
         descriptionQuery = "&description=" + descriptionFormatted;
+        lgToast = true;
       }
 
-      const response = await api.get(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery);
+      const response = await api.get(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
     //   console.log(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
       const items: ExpenseItem[] = response.data.data.data;
       const currentPage = response.data.data.current_page;
@@ -110,6 +115,15 @@ export default function ExpenseList() {
       setLastPage(last);
       setNameFilter('');
       setDateFilter(null);
+
+      if(lgToast) {
+        Toast.show({
+          type: 'success',
+          text1: 'Sucesso!',
+          text2: 'Listagem atualizada com sucesso ✅',
+        });
+      }
+
     } catch (error) {
       console.error('Erro ao carregar despesas:', error);
     } finally {
@@ -174,7 +188,6 @@ export default function ExpenseList() {
     <View style={styles.container}>
       <Header title={pageTitle} />
       <View style={styles.content}>
-        {/* <Text style={styles.title}>Filtros</Text> */}
         {/* <View style={styles.filterContainer}> */}
         <Input
             placeholder="Filtrar por Descrição..."
@@ -189,7 +202,7 @@ export default function ExpenseList() {
             }}
         />
         {/* </View> */}
-        <Button title="Procurar" onPress={() => fetchExpense(1, formatDateToDatabase(dateFilter), nameFilter)} style={styles.filterButton}/>
+        <Button title="Filtrar" onPress={() => fetchExpense(1, formatDateToDatabase(dateFilter), nameFilter)} style={styles.filterButton}/>
         
         <Text style={styles.title}>Despesas</Text>
 
