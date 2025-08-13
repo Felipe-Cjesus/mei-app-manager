@@ -45,6 +45,12 @@ export default function IncomeList() {
   };
 
   const formatDateToDatabase = (dateString : any) => {
+    if(dateString == '' ||
+       dateString == null || 
+       dateString == '1969-12-31' || 
+       dateString == '1970-01-01')
+           return '';
+
     const date = new Date(dateString);
     return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
 };
@@ -95,7 +101,7 @@ export default function IncomeList() {
       let descriptionQuery = "";
       let lgToast = false;
 
-      if(dateFormatted !== '') {
+      if(dateFormatted !== '' && dateFormatted != null) {
         dateQuery = "&date=" + dateFormatted;
         lgToast = true;
       }
@@ -105,6 +111,8 @@ export default function IncomeList() {
       }
 
       const response = await api.get(`/incomes?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
+      // console.log(`/incomes?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
+      
       const items: IncomeItem[] = response.data.data.data;
       const currentPage = response.data.data.current_page;
       const last = response.data.data.last_page;

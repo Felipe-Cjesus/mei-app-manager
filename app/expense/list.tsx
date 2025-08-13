@@ -45,6 +45,12 @@ export default function ExpenseList() {
   };
 
   const formatDateToDatabase = (dateString : any) => {
+    if(dateString == '' ||
+       dateString == null || 
+       dateString == '1969-12-31' || 
+       dateString == '1970-01-01')
+            return '';
+
     const date = new Date(dateString);
     return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
  };
@@ -88,14 +94,13 @@ export default function ExpenseList() {
   async function fetchExpense(pageNumber = 1, date='', description='') {
     try {
       setLoading(true);
-      
       const dateFormatted = date;
       const descriptionFormatted = description;
       let dateQuery = "";
       let descriptionQuery = "";
       let lgToast = false;
 
-      if(dateFormatted !== '') {
+      if(dateFormatted !== '' && dateFormatted != null) {
         dateQuery = "&date=" + dateFormatted;
         lgToast = true;
       }
