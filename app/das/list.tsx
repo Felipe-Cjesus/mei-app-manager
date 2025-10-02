@@ -240,8 +240,12 @@ export default function DasPaymentList() {
                         <Text style={styles.statusOverdue}>
                             {arrayStatus[item.status]}
                         </Text>
-                    ) : item.status === 'overdue' ? (
+                    ) : item.status === 'paid' ? (
                         <Text style={styles.statusPaid}>
+                            {arrayStatus[item.status]}
+                        </Text>
+                    ) : item.status === 'pending' ? (
+                        <Text style={styles.statusPending}>
                             {arrayStatus[item.status]}
                         </Text>
                     ) : (
@@ -307,7 +311,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 12,
-    color: '#000',
+    color: '#888',
     marginTop: 2,
   },
   statusOverdue: {
@@ -318,6 +322,11 @@ const styles = StyleSheet.create({
   statusPaid: {
     fontSize: 12,
     color: '#00B066',
+    marginTop: 2,
+  },
+  statusPending: {
+    fontSize: 12,
+    color: '#E88700',
     marginTop: 2,
   },
   paginationContainer: {
