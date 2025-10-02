@@ -1,4 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import BottomTabBar from '../../src/components/BottomTabBar';
 import Chart from './Chart';
@@ -17,7 +18,7 @@ export default function AppTabs() {
         name="Index"
         component={Home}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Início',
@@ -27,7 +28,7 @@ export default function AppTabs() {
         name="Finance"
         component={Finance}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="wallet-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Financeiro',
@@ -37,7 +38,7 @@ export default function AppTabs() {
         name="Invoice"
         component={Invoice}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="document-text-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Notas fiscais',
@@ -47,7 +48,7 @@ export default function AppTabs() {
         name="Analytics"
         component={Chart}
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <Ionicons name="bar-chart-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Gráficos',

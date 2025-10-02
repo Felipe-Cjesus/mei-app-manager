@@ -1,5 +1,4 @@
 // contexts/AuthContext.tsx
-import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
@@ -47,7 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await SecureStore.deleteItemAsync('user');
     console.log('🔍 LOGOUT');
     setUser(null);
-    router.replace('/login');
+    // router.replace('/login');
   }
 
   async function loadUser() {

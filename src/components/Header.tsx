@@ -1,5 +1,6 @@
 // components/Header.tsx
-import { Feather } from '@expo/vector-icons';
+// import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import api from '../../services/api';
