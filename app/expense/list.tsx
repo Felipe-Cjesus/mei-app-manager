@@ -2,12 +2,12 @@ import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import api from '../../services/api';
@@ -225,9 +225,20 @@ export default function ExpenseList() {
                   <Text style={styles.date}>
                     {new Date(item.date).toLocaleDateString()}
                   </Text>
-                  <Text style={styles.date}>
+                  {/* <Text style={styles.date}>
                     {item.received ? 'Recebido' : 'Pendente'}
-                  </Text>
+                  </Text> */}
+
+                  {item.received ? (
+                    <Text style={styles.statusReceived}>
+                      {'Recebido'}
+                    </Text>
+                  ) : (
+                    <Text style={styles.statusPending}>
+                      {'Pendente'}
+                    </Text>
+                  )}
+                  
                 </View>
               )}
             />
@@ -286,6 +297,16 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     color: '#888',
+    marginTop: 2,
+  },
+  statusPending: {
+    fontSize: 12,
+    color: '#ff0000',
+    marginTop: 2,
+  },
+  statusReceived: {
+    fontSize: 12,
+    color: '#00B066',
     marginTop: 2,
   },
   paginationContainer: {
