@@ -37,9 +37,12 @@ Arquivo de contexto persistente para transferências de sessão e recuperação 
 
 ## 3. Estado Atual (Onde paramos)
 
-Concluímos integralmente a **Fase 1** (Correções de Inconsistências Críticas e Bugs) e a arquitetura do **Seletor Global de Empresas (Multi-tenant Reativo)**.
+Concluímos integralmente a **Fase 1** (Correções de Inconsistências Críticas e Bugs), o **Seletor Global de Empresas (Multi-tenant Reativo)** e a **Fase 2** (Telas Faltantes e Recursos Pendentes).
 
 ### Arquivos Criados ou Alterados:
+* `app/(tabs)/Invoice.tsx`: Módulo completo de Notas Fiscais com listagem paginada por empresa e ano, métricas de faturamento e quantidade de NFs, exclusão (`DELETE /invoices/{id}`), abertura de anexo PDF/XML e modal de cadastro com upload multipart (`POST /invoices`).
+* `app/Notification.tsx`: Central de Notificações com filtros dinâmicos (Todas, Não lidas, Guia DAS, Limite MEI), marcação individual de leitura (`PUT /alerts/{id}/read`), marcação em lote, pull-to-refresh e badges temáticos.
+* `app/Account.tsx`: Perfil do usuário com avatar de iniciais, exibição da empresa ativa com link de troca rápida, atalhos do sistema, metadados de versão e fluxo de encerramento de sessão (Logout).
 * `contexts/EnterpriseContext.tsx`: Contexto global para armazenar a lista de empresas e a empresa ativa (`activeEnterprise`), com persistência local em `@active_enterprise_id`.
 * `src/components/EnterprisePickerModal.tsx`: Modal interativo para seleção de cliente/empresa, indicação da empresa ativa e botão para novo cadastro.
 * `app/_layout.tsx`: `EnterpriseProvider` adicionado no topo da árvore de componentes.
@@ -77,19 +80,17 @@ Concluímos integralmente a **Fase 1** (Correções de Inconsistências Crítica
 
 Lista priorizada para as próximas sessões:
 
-### 📌 Fase 2: Telas Faltantes e Recursos Pendentes
-- [ ] **Notas Fiscais (`app/(tabs)/Invoice.tsx`)**:
-  - Implementar tela completa (atualmente em branco).
-  - Listagem paginada consumindo `GET /invoices` com filtro por empresa e ano.
-  - Tela/modal de cadastro consumindo `POST /invoices` com upload de arquivo PDF/XML.
-  - Opção para visualizar/abrir o anexo da nota fiscal.
-- [ ] **Central de Notificações & Alertas (`app/Notification.tsx`)**:
-  - Implementar tela completa (atualmente em branco).
-  - Listar alertas do backend (`GET /alerts`) filtrados por status de leitura.
-  - Exibir avisos de vencimento de DAS e alertas de limites de faturamento do MEI (80%, 100%, excedido).
-  - Ação de marcar alerta como lido (`PUT /alerts/{id}/read`).
-- [ ] **Perfil e Conta (`app/Account.tsx`)**:
-  - Exibir informações do usuário autenticado e permitir troca de senha ou logout.
+### 📌 Fase 2: Telas Faltantes e Recursos Pendentes (Concluída ✅)
+- [x] **Notas Fiscais (`app/(tabs)/Invoice.tsx`)**:
+  - Implementada tela completa com listagem paginada consumindo `GET /invoices` com filtro por empresa e ano.
+  - Modal de cadastro consumindo `POST /invoices` com upload multipart de arquivo PDF/XML.
+  - Opção para visualizar/abrir o anexo da nota fiscal e exclusão de notas (`DELETE`).
+- [x] **Central de Notificações & Alertas (`app/Notification.tsx`)**:
+  - Implementada tela completa consumindo `GET /alerts` com filtros de leitura e tipo.
+  - Visualização de avisos de vencimento de DAS e limites de faturamento do MEI (80%, 100%, excedido).
+  - Ação de marcar alerta como lido (`PUT /alerts/{id}/read`) individual e em lote.
+- [x] **Perfil e Conta (`app/Account.tsx`)**:
+  - Exibição de informações do usuário autenticado, empresa ativa, atalhos do sistema e logout seguro.
 
 ### 📌 Fase 3: Dashboard e Inteligência de Negócio MEI
 - [ ] **Termômetro do Limite Anual do MEI (R$ 81.000,00)**:
