@@ -1,10 +1,10 @@
-// components/Header.tsx
-// import { Feather } from '@expo/vector-icons';
+// src/components/Header.tsx
 import Feather from '@expo/vector-icons/Feather';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import api from '../../services/api';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import colors from '../theme/colors';
+import EnterprisePickerModal from './EnterprisePickerModal';
 
 type HeaderProps = {
   onNotificationPress?: () => void;
@@ -15,41 +15,37 @@ export default function Header({
   onNotificationPress,
   onSettingsPress,
 }: HeaderProps) {
-  const [company_name, setCompanyName] = useState('MEI Manager');
-  const [company_id, setCompanyId] = useState('CNPJ 000000000');
-  const [state, setState] = useState('');
-  const [city, setCity] = useState('');
-  const [address, setAddress] = useState('');
-  const [number, setNumber] = useState('');
-  const [contact, setContact] = useState('');
-  const [social_media, setSocial_media] = useState('');
+  const { activeEnterprise, enterprises } = useEnterprise();
+  const [pickerVisible, setPickerVisible] = useState(false);
 
-  useEffect(() => {
-    async function fetchCompany() {
-      try {
-        const response = await api.get('/enterprises');
-        const { company_name, company_id, state, city, address, number, contact, social_media } = response.data.data;
-        // console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
-        setCompanyName(company_name);
-        setCompanyId(`CNPJ: ${company_id}`);
-        setState(state);
-        setCity(city);
-        setAddress(address);
-        setNumber(number);
-        setContact(contact);
-        setSocial_media(social_media);
-      } catch (error) {
-        console.error('Erro ao buscar empresa:', error);
-      }
-    }
-
-    fetchCompany();
-  }, []);
+  const companyName = activeEnterprise?.company_name || 'Selecione uma Empresa';
+  const companyCnpj = activeEnterprise?.company_id
+    ? `CNPJ: ${activeEnterprise.company_id}`
+    : 'Toque para selecionar';
+  const state = activeEnterprise?.state || '';
+  const city = activeEnterprise?.city || '';
+  const address = activeEnterprise?.address || '';
+  const number = activeEnterprise?.number || '';
 
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
-        <Text style={styles.title}>{company_name}</Text>
+        <TouchableOpacity
+          style={styles.selectorButton}
+          onPress={() => setPickerVisible(true)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.selectorTextContainer}>
+            <View style={styles.companyTitleRow}>
+              <Text style={styles.title} numberOfLines={1}>
+                {companyName}
+              </Text>
+              <Feather name="chevron-down" size={20} color="#fff" style={{ marginLeft: 6 }} />
+            </View>
+            <Text style={styles.text}>{companyCnpj}</Text>
+          </View>
+        </TouchableOpacity>
+
         <View style={styles.icons}>
           <TouchableOpacity onPress={onNotificationPress} style={styles.iconButton}>
             <Feather name="bell" size={22} color="#fff" />
@@ -60,9 +56,33 @@ export default function Header({
         </View>
       </View>
 
-      <Text style={styles.text}>{company_id}</Text>
-      <Text style={styles.subtext}>{state} - {city}</Text>
-      <Text style={styles.subtext}>{address}, {number}</Text>
+      {(city || state) && (
+        <Text style={styles.subtext}>
+          {city}
+          {state ? ` - ${state}` : ''}
+        </Text>
+      )}
+      {address && (
+        <Text style={styles.subtext}>
+          {address}
+          {number ? `, ${number}` : ''}
+        </Text>
+      )}
+
+      {enterprises.length > 1 && (
+        <TouchableOpacity
+          style={styles.switchBadge}
+          onPress={() => setPickerVisible(true)}
+        >
+          <Feather name="repeat" size={12} color="#fff" style={{ marginRight: 4 }} />
+          <Text style={styles.switchBadgeText}>Trocar Cliente / Empresa</Text>
+        </TouchableOpacity>
+      )}
+
+      <EnterprisePickerModal
+        visible={pickerVisible}
+        onClose={() => setPickerVisible(false)}
+      />
     </View>
   );
 }
@@ -70,35 +90,68 @@ export default function Header({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingBottom: 100,
-    paddingHorizontal: 24,
+    paddingTop: 56,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  selectorButton: {
+    flex: 1,
+    marginRight: 12,
+  },
+  selectorTextContainer: {
+    justifyContent: 'center',
+  },
+  companyTitleRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
+    maxWidth: '85%',
   },
   text: {
-    fontSize: 18,
-    color: '#fff',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 2,
   },
   subtext: {
-    fontSize: 18,
-    color: '#fff',
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
   },
   icons: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 12,
+    alignItems: 'center',
   },
   iconButton: {
-    marginLeft: 12,
+    padding: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 20,
+  },
+  switchBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  switchBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

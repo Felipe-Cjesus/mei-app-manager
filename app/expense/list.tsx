@@ -2,14 +2,15 @@ import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
@@ -26,6 +27,7 @@ type ExpenseItem = {
 };
 
 export default function ExpenseList() {
+  const { activeEnterprise } = useEnterprise();
   const [data, setData] = useState<ExpenseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -44,16 +46,20 @@ export default function ExpenseList() {
     }).format(value);
   };
 
-  const formatDateToDatabase = (dateString : any) => {
-    if(dateString == '' ||
-       dateString == null || 
-       dateString == '1969-12-31' || 
-       dateString == '1970-01-01')
-            return '';
+  const formatDateToDatabase = (dateString: any) => {
+    if (
+      dateString === '' ||
+      dateString === null ||
+      dateString === '1969-12-31' ||
+      dateString === '1970-01-01'
+    ) {
+      return '';
+    }
 
     const date = new Date(dateString);
-    return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
- };
+    if (isNaN(date.getTime())) return '';
+    return format(date, 'yyyy-MM-dd'); // Formata como "2025-09-21"
+  };
 
   const getPaginationPages = (current: number, total: number, maxVisible: number = 3) => {
     const pages: (number | string)[] = [];
@@ -109,7 +115,8 @@ export default function ExpenseList() {
         lgToast = true;
       }
 
-      const response = await api.get(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
+      const enterpriseQuery = activeEnterprise?.id ? `&enterprise_id=${activeEnterprise.id}` : '';
+      const response = await api.get(`/expenses?page=${pageNumber}&perPage=${perPage}` + dateQuery + descriptionQuery + enterpriseQuery);
     //   console.log(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
       const items: ExpenseItem[] = response.data.data.data;
       const currentPage = response.data.data.current_page;
@@ -138,7 +145,7 @@ export default function ExpenseList() {
 
   useEffect(() => {
     fetchExpense(1);
-  }, []);
+  }, [activeEnterprise?.id]);
 
   const handlePageChange = (targetPage: number) => {
     if (targetPage >= 1 && targetPage <= lastPage && targetPage !== page) {

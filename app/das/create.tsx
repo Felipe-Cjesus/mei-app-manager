@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
@@ -12,6 +13,7 @@ import TogglePaymentStatus from '../../src/components/TogglePaymentStatus';
 import colors from '../../src/theme/colors';
 
 export default function CreateDas() {
+  const { activeEnterprise } = useEnterprise();
   const [reference, setReference] = useState('');
   const [dueDate, setDueDate] = useState(new Date());
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
@@ -35,11 +37,12 @@ export default function CreateDas() {
       reference,
       due_date: formatDateToDatabase(dueDate),
       payment_date: paymentDate ? formatDateToDatabase(paymentDate) : null,
-      amount,
+      amount: parseFloat(amount.replace(',', '.')),
       status,
+      ...(activeEnterprise?.id ? { enterprise_id: activeEnterprise.id } : {}),
     };
 
-    api.post('/das', data)
+    api.post('/das-payments', data)
       .then(response => {
         Toast.show({
           type: 'success',

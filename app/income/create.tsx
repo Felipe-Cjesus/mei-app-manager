@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
@@ -12,6 +13,7 @@ import ToggleRecebido from '../../src/components/ToggleRecebido';
 import colors from '../../src/theme/colors';
 
 export default function CreateIncome() {
+  const { activeEnterprise } = useEnterprise();
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
@@ -34,9 +36,10 @@ export default function CreateIncome() {
     // Enviar dados para API
     const data = {
       description,
-      amount,
-      date : formatDateToDatabase(date),
+      amount: parseFloat(amount.replace(',', '.')),
+      date: formatDateToDatabase(date),
       received,
+      ...(activeEnterprise?.id ? { enterprise_id: activeEnterprise.id } : {}),
     };
 
     // Enviar dados para a API usando axios

@@ -53,9 +53,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const token = await SecureStore.getItemAsync('token');
     const storedUser = await SecureStore.getItemAsync('user');
 
-    //teste
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
     if (token && storedUser) {
       api.defaults.headers.Authorization = `Bearer ${token}`;
       try {

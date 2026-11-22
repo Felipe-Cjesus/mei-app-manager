@@ -3,28 +3,30 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from '../theme/colors';
 
+type ExpenseType = 'manual' | 'nota_fiscal';
+
 type Props = {
-  value: string;
-  onChange: (val: "Manual" | "Nota fiscal") => void;
+  value: ExpenseType;
+  onChange: (val: ExpenseType) => void;
 };
 
-export default function ToggleRecebido({ value, onChange }: Props) {
+export default function ToggleType({ value, onChange }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Tipo</Text>
       <View style={styles.toggleGroup}>
         <TouchableOpacity
-          style={[styles.toggleOption, value==='Manual' && styles.active]}
-          onPress={() => onChange('Manual')}
+          style={[styles.toggleOption, value === 'manual' && styles.active]}
+          onPress={() => onChange('manual')}
         >
-          <Text style={[styles.toggleText, value && styles.activeText]}>Manual</Text>
+          <Text style={[styles.toggleText, value === 'manual' && styles.activeText]}>Manual</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.toggleOption, value==='Nota fiscal' && styles.active]}
-          onPress={() => onChange('Nota fiscal')}
+          style={[styles.toggleOption, value === 'nota_fiscal' && styles.active]}
+          onPress={() => onChange('nota_fiscal')}
         >
-          <Text style={[styles.toggleText, !value && styles.activeText]}>Nota Fiscal</Text>
+          <Text style={[styles.toggleText, value === 'nota_fiscal' && styles.activeText]}>Nota Fiscal</Text>
         </TouchableOpacity>
       </View>
     </View>

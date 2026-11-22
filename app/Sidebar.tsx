@@ -62,7 +62,10 @@ export default function Sidebar({
   }, [visible]);
 
   return (
-    <Animated.View style={[styles.overlay, { opacity: opacityAnim }]}>
+    <Animated.View 
+      style={[styles.overlay, { opacity: opacityAnim }]} 
+      pointerEvents={visible ? 'auto' : 'none'}
+    >
       <Pressable style={styles.background} onPress={onClose} />
 
       <Animated.View style={[styles.sidebar, { right: slideAnim }]}>

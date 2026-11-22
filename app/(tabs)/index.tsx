@@ -3,10 +3,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../contexts/AuthContext';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
@@ -17,6 +18,7 @@ import Sidebar from '../Sidebar';
 export default function Home() {
   const router = useRouter();
   const { logout } = useAuth();
+  const { activeEnterprise } = useEnterprise();
   const [yearReference, setYearReference] = useState<Date | null>(null);
 
   const [titleYear, setTitleYear] = useState('');
@@ -28,11 +30,12 @@ export default function Home() {
     }).format(value);
   };
 
-  const formatDateToDatabase = (dateString : any) => {
+  const formatDateToDatabase = (dateString: any) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
-    // return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
+    if (isNaN(date.getTime())) return '';
     return format(date, 'yyyy');
-    };
+  };
 
   const [summary, setSummary] = useState({
     income_total: 0,
@@ -46,52 +49,59 @@ export default function Home() {
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
-  // useEffect(() => {
-    async function fetchSummary(year='') {
-      try {
-        const yearFormatted = year;
-        let yearQuery = "";
-        if(yearFormatted !== '') {
-          yearQuery = "?year=" + yearFormatted;
-        }
-
-        setTitleYear(year);
-
-        const response = await api.get('/reports/monthly'+yearQuery);
-        const { income_total, 
-                income_total_pending,
-                expense_total, 
-                daspayment_total, 
-                invoice_quantity, 
-                invoice_total, 
-                balance } = response.data.data.total;
-
-        //console.log('🔍 response.data: ', JSON.stringify(response.data, null, 2));
-        console.log('/reports/monthly'+yearQuery);
-
-        setSummary({ income_total, 
-                     income_total_pending, 
-                     expense_total, 
-                     daspayment_total, 
-                     invoice_quantity, 
-                     invoice_total, 
-                     balance });
-                    
-        if(yearFormatted !== '') {
-          Toast.show({
-            type: 'success',
-            text1: 'Sucesso!',
-            text2: 'Resumo atualizado com sucesso ✅',
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao buscar resumo:', error);
+  const fetchSummary = useCallback(async (year = '') => {
+    try {
+      const params: string[] = [];
+      if (year && year !== '') {
+        params.push(`year=${encodeURIComponent(year)}`);
       }
+      if (activeEnterprise?.id) {
+        params.push(`enterprise_id=${encodeURIComponent(activeEnterprise.id)}`);
+      }
+
+      const queryString = params.length > 0 ? '?' + params.join('&') : '';
+      setTitleYear(year);
+
+      const response = await api.get('/reports/monthly' + queryString);
+      const total = response.data?.data?.total;
+
+      if (total) {
+        const {
+          income_total,
+          income_total_pending,
+          expense_total,
+          daspayment_total,
+          invoice_quantity,
+          invoice_total,
+          balance,
+        } = total;
+
+        setSummary({
+          income_total: income_total || 0,
+          income_total_pending: income_total_pending || 0,
+          expense_total: expense_total || 0,
+          daspayment_total: daspayment_total || 0,
+          invoice_quantity: invoice_quantity || 0,
+          invoice_total: invoice_total || 0,
+          balance: balance || 0,
+        });
+      }
+
+      if (year !== '') {
+        Toast.show({
+          type: 'success',
+          text1: 'Sucesso!',
+          text2: 'Resumo atualizado com sucesso ✅',
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar resumo:', error);
     }
+  }, [activeEnterprise?.id]);
 
   useEffect(() => {
-    fetchSummary();
-  }, []);
+    fetchSummary(yearReference ? formatDateToDatabase(yearReference) : '');
+  }, [fetchSummary, activeEnterprise?.id]);
 
   return (
     <View style={styles.wrapper}>
@@ -123,12 +133,27 @@ export default function Home() {
         <Text style={styles.sectionTitle}>Resumo {titleYear ? titleYear : new Date().getFullYear()}</Text>
 
         <DateInput
+            placeholder="Selecionar ano de referência"
             value={yearReference}
             onChange={(selectedDate) => {
                 if (selectedDate) setYearReference(selectedDate);
             }}
         />
-        <Button title="Filtrar" onPress={() => fetchSummary(formatDateToDatabase(yearReference))} style={styles.filterButton}/>
+        <Button 
+          title="Filtrar" 
+          onPress={() => {
+            if (yearReference) {
+              fetchSummary(formatDateToDatabase(yearReference));
+            } else {
+              Toast.show({
+                type: 'info',
+                text1: 'Atenção',
+                text2: 'Selecione uma data para filtrar o ano.',
+              });
+            }
+          }} 
+          style={styles.filterButton}
+        />
 
         <View style={styles.cardGrid}>
           <Card icon="cash-outline" label="Receita recebida" value={formatCurrency(summary.income_total)}  />

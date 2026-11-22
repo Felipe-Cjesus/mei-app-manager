@@ -1,17 +1,17 @@
 /**
  * @flow
  */
-import { Typography, Colors, Assets } from 'react-native-ui-lib';
 import { Dimensions, Platform } from 'react-native';
+import { Assets, Colors, Typography } from 'react-native-ui-lib';
 
 import colors from './colors';
-import fonts from './fonts';
 import commonStyles from './common';
+import fonts from './fonts';
 
 const { width } = Dimensions.get('window');
 
 // Guideline sizes are based on standard ~5" screen mobile device
-const guidelineBaseWidth: number = 350;
+const guidelineBaseWidth = 350;
 
 Colors.loadColors(colors);
 
@@ -122,6 +122,7 @@ Assets.loadAssetsGroup('images', {});
 
 Assets.loadAssetsGroup('icons', {});
 
-const scale = (size: number): number => (width / guidelineBaseWidth) * size;
+const scale = (size) => (width / guidelineBaseWidth) * size;
 
-export { colors, fonts, scale, commonStyles };
+export { colors, commonStyles, fonts, scale };
+

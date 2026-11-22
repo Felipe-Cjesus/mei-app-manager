@@ -10,6 +10,7 @@ import {
     View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
@@ -27,12 +28,13 @@ type DasPaymentItem = {
 };
 
 export default function DasPaymentList() {
+  const { activeEnterprise } = useEnterprise();
   const [data, setData] = useState<DasPaymentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const router = useRouter();
-  const pageTitle = 'Listagem de Receitas';
+  const pageTitle = 'Listagem de Guias DAS';
   const perPage = 10;
 
   const [nameFilter, setNameFilter] = useState('');
@@ -52,16 +54,20 @@ export default function DasPaymentList() {
     }).format(value);
   };
 
-  const formatDateToDatabase = (dateString : any) => {
-    if(dateString == '' ||
-       dateString == null || 
-       dateString == '1969-12-31' || 
-       dateString == '1970-01-01')
-           return '';
+  const formatDateToDatabase = (dateString: any) => {
+    if (
+      dateString === '' ||
+      dateString === null ||
+      dateString === '1969-12-31' ||
+      dateString === '1970-01-01'
+    ) {
+      return '';
+    }
 
     const date = new Date(dateString);
-    return format(date, 'yyyy-MM-dd');  // Formata como "2025-09-21"
-};
+    if (isNaN(date.getTime())) return '';
+    return format(date, 'yyyy');
+  };
 
   const getPaginationPages = (current: number, total: number, maxVisible: number = 3) => {
     const pages: (number | string)[] = [];
@@ -99,27 +105,26 @@ export default function DasPaymentList() {
     return pages;
   };
 
-  async function fetchDasPayment(pageNumber = 1, date='', description='') {
+  async function fetchDasPayment(pageNumber = 1, year = '', reference = '') {
     try {
       setLoading(true);
-      
-      const dateFormatted = date;
-      const descriptionFormatted = description;
-      let dateQuery = "";
-      let descriptionQuery = "";
+
+      let queryParams = "";
       let lgToast = false;
 
-      if(dateFormatted !== '' && dateFormatted != null) {
-        dateQuery = "&date=" + dateFormatted;
+      if (year && year !== '') {
+        queryParams += "&year=" + encodeURIComponent(year);
         lgToast = true;
       }
-      if(descriptionFormatted !== '') {
-        descriptionQuery = "&description=" + descriptionFormatted;
+      if (reference && reference.trim() !== '') {
+        queryParams += "&reference=" + encodeURIComponent(reference.trim());
         lgToast = true;
+      }
+      if (activeEnterprise?.id) {
+        queryParams += "&enterprise_id=" + encodeURIComponent(activeEnterprise.id);
       }
 
-      const response = await api.get(`/das-payments?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
-      // console.log(`/das-payments?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
+      const response = await api.get(`/das-payments?page=${pageNumber}&perPage=${perPage}` + queryParams);
       
       const items: DasPaymentItem[] = response.data.data.data;
       const currentPage = response.data.data.current_page;
@@ -129,7 +134,7 @@ export default function DasPaymentList() {
       setPage(currentPage);
       setLastPage(last);
       
-      if(lgToast) {
+      if (lgToast) {
         Toast.show({
           type: 'success',
           text1: 'Sucesso!',
@@ -138,7 +143,7 @@ export default function DasPaymentList() {
       }
 
     } catch (error) {
-      console.error('Erro ao carregar receitas:', error);
+      console.error('Erro ao carregar guias DAS:', error);
     } finally {
       setLoading(false);
     }
@@ -146,7 +151,7 @@ export default function DasPaymentList() {
 
   useEffect(() => {
     fetchDasPayment(1);
-  }, []);
+  }, [activeEnterprise?.id]);
 
   const handlePageChange = (targetPage: number) => {
     if (targetPage >= 1 && targetPage <= lastPage && targetPage !== page) {
@@ -203,20 +208,25 @@ export default function DasPaymentList() {
       <View style={styles.content}>
 
         <Input
-              placeholder="Filtrar por Descrição..."
-              value={nameFilter}
-              onChangeText={setNameFilter}
-          />
-          
-          <DateInput
-              value={dateFilter}
-              onChange={(selectedDate) => {
-                  if (selectedDate) setDateFilter(selectedDate);
-              }}
-          />
-          <Button title="Filtrar" onPress={() => fetchDasPayment(1, formatDateToDatabase(dateFilter), nameFilter)} style={styles.filterButton}/>
+          placeholder="Filtrar por Referência (Ex: 05/2025)..."
+          value={nameFilter}
+          onChangeText={setNameFilter}
+        />
+        
+        <DateInput
+          placeholder="Filtrar por ano"
+          value={dateFilter}
+          onChange={(selectedDate) => {
+            if (selectedDate) setDateFilter(selectedDate);
+          }}
+        />
+        <Button
+          title="Filtrar"
+          onPress={() => fetchDasPayment(1, formatDateToDatabase(dateFilter), nameFilter)}
+          style={styles.filterButton}
+        />
 
-        <Text style={styles.title}>Receitas</Text>
+        <Text style={styles.title}>Guias DAS</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color={colors.primaryDark} />

@@ -1,10 +1,10 @@
-// import { Picker } from '@react-native-picker/picker';
 import { format } from 'date-fns';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
@@ -14,39 +14,40 @@ import ToggleType from '../../src/components/ToggleType';
 import colors from '../../src/theme/colors';
 
 export default function CreateExpense() {
+  const { activeEnterprise } = useEnterprise();
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
   const router = useRouter();
-  const [type, setType] = useState<'Manual' | 'Nota fiscal'>('Manual');
+  const [type, setType] = useState<'manual' | 'nota_fiscal'>('manual');
   const [file, setFile] = useState<any>(null);
   const pageTitle = 'Inclusão de Despesa';
 
   const handlePickFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-            type: [
-            'application/pdf',
-            'application/xml',
-            'image/jpeg',
-            'image/png',
-            ],
-            copyToCacheDirectory: true,
-        });
+        type: [
+          'application/pdf',
+          'application/xml',
+          'image/jpeg',
+          'image/png',
+        ],
+        copyToCacheDirectory: true,
+      });
 
-        if (result.canceled) {
-            console.log("Seleção cancelada");
-            return;
-        }
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        console.log("Seleção cancelada");
+        return;
+      }
 
-        const fileImp = result.assets[0];
+      const fileImp = result.assets[0];
 
-        if (fileImp.size && fileImp.size > 2 * 1024 * 1024) {
-            Alert.alert('Erro', 'O arquivo deve ter no máximo 2MB.');
-            return;
-        }
-    
-        setFile(result);
+      if (fileImp.size && fileImp.size > 2 * 1024 * 1024) {
+        Alert.alert('Erro', 'O arquivo deve ter no máximo 2MB.');
+        return;
+      }
+
+      setFile(fileImp);
     } catch (error) {
       console.error('Erro ao selecionar arquivo:', error);
     }
@@ -66,33 +67,37 @@ export default function CreateExpense() {
 
     const formData = new FormData();
     formData.append('description', description);
-    formData.append('amount', amount);
+    formData.append('amount', amount.replace(',', '.'));
     formData.append('date', formatDateToDatabase(date));
     formData.append('type', type);
 
+    if (activeEnterprise?.id) {
+      formData.append('enterprise_id', String(activeEnterprise.id));
+    }
+
     if (file) {
-        formData.append('file', {
-          uri: Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
-          name: file.name,
-          type: file.mimeType || 'application/octet-stream',
-        } as any);
+      formData.append('file', {
+        uri: Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
+        name: file.name,
+        type: file.mimeType || 'application/octet-stream',
+      } as any);
     }
 
     // Enviar dados para a API usando axios
     try {
-        await api.post('/expenses', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        Alert.alert('Sucesso', 'Despesa cadastrada com sucesso!');
-        setDescription('');
-        setAmount('');
-        setDate(new Date());
-        setType('Manual');
-        setFile(null);
-      } catch (error) {
-        console.error('Erro ao salvar despesa:', error);
-        Alert.alert('Erro', 'Não foi possível salvar a despesa.');
-      }
+      await api.post('/expenses', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      Alert.alert('Sucesso', 'Despesa cadastrada com sucesso!');
+      setDescription('');
+      setAmount('');
+      setDate(new Date());
+      setType('manual');
+      setFile(null);
+    } catch (error) {
+      console.error('Erro ao salvar despesa:', error);
+      Alert.alert('Erro', 'Não foi possível salvar a despesa.');
+    }
   };
 
   const formatDateToDatabase = (dateString : any) => {
