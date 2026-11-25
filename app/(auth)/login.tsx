@@ -1,6 +1,13 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import {
+  Alert,
+  Image,
+  Keyboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 
 import Button from '../../src/components/Button';
 import Input from '../../src/components/Input';
@@ -38,46 +45,48 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/images/mei-manager-logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <TextView size="xl" bold style={styles.title}>
-        Bem-vindo de volta 👋
-      </TextView>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <Image
+          source={require('../../assets/images/mei-manager-logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <TextView size="xl" bold style={styles.title}>
+          Bem-vindo de volta 👋
+        </TextView>
 
-      <Input
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        placeholder="seuemail@exemplo.com"
-        keyboardType="email-address"
-      />
+        <Input
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="seuemail@exemplo.com"
+          keyboardType="email-address"
+        />
 
-      <Input
-        label="Senha"
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Sua senha"
-        secureTextEntry
-      />
+        <Input
+          label="Senha"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Sua senha"
+          secureTextEntry
+        />
 
-      <Button
-        title="Entrar"
-        onPress={handleLogin}
-        loading={loading}
-        variant="primary"
-      />
+        <Button
+          title="Entrar"
+          onPress={handleLogin}
+          loading={loading}
+          variant="primary"
+        />
 
-      <Button
-        title="Criar conta"
-        onPress={() => router.push('/(auth)/register')}
-        variant="outline"
-        style={{ marginTop: 12 }}
-      />
-    </View>
+        <Button
+          title="Criar conta"
+          onPress={() => router.push('/(auth)/register')}
+          variant="outline"
+          style={{ marginTop: 12 }}
+        />
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 

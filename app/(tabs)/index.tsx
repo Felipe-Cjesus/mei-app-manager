@@ -114,6 +114,10 @@ export default function Home() {
           setSidebarVisible(false);
           router.push('/Enterprise');
         }}
+        onNotificationPress={() => {
+          setSidebarVisible(false);
+          router.push('/Notification');
+        }}
         onLogout={() => {
           logout();
           setSidebarVisible(false);

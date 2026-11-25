@@ -1,9 +1,10 @@
 // app/_layout.tsx
 import { Redirect, Slot, useSegments } from 'expo-router';
-import { LogBox } from 'react-native';
+import { LogBox, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { EnterpriseProvider } from '../contexts/EnterpriseContext';
+import { toastConfig } from '../src/components/CustomToast';
 import Splash from '../src/components/Splash';
 
 // Suprime o warning de depreciação do onChange mantido pela lib react-native-modal-datetime-picker no terminal e LogBox
@@ -30,7 +31,7 @@ export default function RootLayout() {
     <AuthProvider>
       <EnterpriseProvider>
         <AuthGate />
-        <Toast />
+        <Toast config={toastConfig} topOffset={Platform.OS === 'ios' ? 56 : 40} />
       </EnterpriseProvider>
     </AuthProvider>
   );

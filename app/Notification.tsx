@@ -2,7 +2,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -15,7 +15,6 @@ import {
 import Toast from 'react-native-toast-message';
 import { useEnterprise } from '../contexts/EnterpriseContext';
 import api from '../services/api';
-import Button from '../src/components/Button';
 import Header from '../src/components/HeaderSecundary';
 import colors from '../src/theme/colors';
 
@@ -145,7 +144,7 @@ export default function Notification() {
 
   return (
     <View style={styles.container}>
-      <Header title="Notificações & Alertas 🔔" />
+      <Header title="Notificações & Alertas 🔔" showBackButton onBack={() => router.back()} />
 
       <View style={styles.content}>
         {/* Filtro de Escopo: Empresa Ativa vs Todas as Empresas */}
@@ -337,13 +336,6 @@ export default function Notification() {
             }}
           />
         )}
-
-        <Button
-          title="Voltar"
-          onPress={() => router.back()}
-          variant="outline"
-          style={{ marginTop: 12, marginBottom: 20 }}
-        />
       </View>
     </View>
   );

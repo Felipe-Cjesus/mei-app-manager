@@ -1,7 +1,7 @@
 // app/(tabs)/Chart.tsx
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -150,6 +150,10 @@ export default function Chart() {
         onEnterprisePress={() => {
           setSidebarVisible(false);
           router.push('/Enterprise');
+        }}
+        onNotificationPress={() => {
+          setSidebarVisible(false);
+          router.push('/Notification');
         }}
         onLogout={() => {
           logout();

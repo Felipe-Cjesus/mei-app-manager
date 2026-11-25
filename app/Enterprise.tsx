@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { EnterpriseItem, useEnterprise } from '../contexts/EnterpriseContext';
@@ -139,8 +139,12 @@ export default function Enterprise() {
 
   return (
     <View style={styles.container}>
-      <Header title={pageTitle} />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <Header title={pageTitle} showBackButton onBack={() => router.back()} />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         {loadingEnterprises ? (
           <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 32 }} />
         ) : (
@@ -301,7 +305,7 @@ export default function Enterprise() {
               title={editingId ? 'Salvar Alterações' : 'Cadastrar Empresa'}
               onPress={handleSaveEnterprise}
               loading={submitting}
-              style={{ marginTop: 16 }}
+              style={{ marginTop: 16, marginBottom: editingId ? 0 : 32 }}
             />
 
             {editingId && (
@@ -309,16 +313,9 @@ export default function Enterprise() {
                 title="Cadastrar Outra Empresa (+)"
                 onPress={handleStartNewEnterprise}
                 variant="outline"
-                style={{ marginTop: 12 }}
+                style={{ marginTop: 12, marginBottom: 32 }}
               />
             )}
-
-            <Button
-              title="Voltar"
-              onPress={() => router.back()}
-              variant="outline"
-              style={{ marginTop: 12, marginBottom: 32 }}
-            />
           </>
         )}
       </ScrollView>

@@ -1,7 +1,14 @@
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+    Keyboard,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableWithoutFeedback,
+    View,
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
@@ -80,49 +87,44 @@ export default function CreateIncome() {
 
   return (
     <View style={styles.container}>
-      <Header title={pageTitle} />
-      <View style={styles.content}>
-        <Text style={styles.title}>Nova Receita</Text>
+      <Header title={pageTitle} showBackButton onBack={() => router.push('/Finance')} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+          <Text style={styles.title}>Nova Receita</Text>
 
-        <Input
-          label="Descrição"
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Ex: Pagamento de serviço"
-        />
+          <Input
+            label="Descrição"
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Ex: Pagamento de serviço"
+          />
 
-        <Input
-          label="Valor (R$)"
-          value={amount}
-          onChangeText={(text) => setAmount(maskCurrency(text))}
-          placeholder="R$ 0,00"
-          keyboardType="numeric"
-        />
+          <Input
+            label="Valor (R$)"
+            value={amount}
+            onChangeText={(text) => setAmount(maskCurrency(text))}
+            placeholder="R$ 0,00"
+            keyboardType="numeric"
+          />
 
-        <DateInput
-          label="Data de recebimento"
-          value={date}
-          onChange={setDate}
-        />
+          <DateInput
+            label="Data de recebimento"
+            value={date}
+            onChange={setDate}
+          />
 
-        {/* <Text style={styles.label}>Pagamento Recebido?</Text>
-        <Switch
-          value={received}
-          onValueChange={setReceived}
-          thumbColor={received ? '#2979FF' : '#ccc'}
-          trackColor={{ false: '#ccc', true: '#A7C7FF' }}
-        /> */}
-        <ToggleRecebido value={received} onChange={setReceived} />
+          <ToggleRecebido value={received} onChange={setReceived} />
 
-        <Button title="Salvar" 
-                onPress={handleSubmit} 
-                style={{ marginTop: 16 }} />
-
-        <Button title="Voltar" 
-                onPress={() => router.push('/Finance')} 
-                variant="outline" 
-                style={{ marginTop: 16 }} />
-      </View>
+          <Button title="Salvar" 
+                  onPress={handleSubmit} 
+                  style={{ marginTop: 16 }} />
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </View>
   );
 }
@@ -134,7 +136,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 24,
+    paddingBottom: 48,
   },
   title: {
     fontSize: 22,

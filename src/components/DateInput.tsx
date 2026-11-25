@@ -1,7 +1,15 @@
 // components/DateInput.tsx
 import { format } from 'date-fns';
 import { useState } from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import {
+  Keyboard,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import colors from '../theme/colors';
 
@@ -19,12 +27,14 @@ export default function DateInput({ label, value, onChange, placeholder = 'Selec
   const isDark = colorScheme === 'dark';
 
   const handleConfirm = (date: Date) => {
+    Keyboard.dismiss();
     setPickerVisible(false);
     onChange(date);
     setIsFocused(false); // fecha o foco após seleção
   };
 
   const handleCancel = () => {
+    Keyboard.dismiss();
     setPickerVisible(false);
     setIsFocused(false); // remove o foco se cancelar
   };
@@ -39,6 +49,7 @@ export default function DateInput({ label, value, onChange, placeholder = 'Selec
           isFocused && { borderColor: colors.primary, borderWidth: 2 },
         ]}
         onPress={() => {
+          Keyboard.dismiss(); // fecha qualquer teclado ativo antes de abrir o seletor
           setPickerVisible(true);
           setIsFocused(true); // aplica o foco visual
         }}

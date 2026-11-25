@@ -1,14 +1,13 @@
 // app/Account.tsx
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { useEnterprise } from '../contexts/EnterpriseContext';
@@ -48,7 +47,7 @@ export default function Account() {
 
   return (
     <View style={styles.container}>
-      <Header title="Minha Conta 👤" />
+      <Header title="Minha Conta 👤" showBackButton onBack={() => router.back()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Card do Usuário */}
@@ -139,7 +138,7 @@ export default function Account() {
 
         {/* Informações da Aplicação */}
         <View style={styles.appInfoContainer}>
-          <Text style={styles.appVersion}>MEI Manager v1.0.0</Text>
+          <Text style={styles.appVersion}>MEI Manager v2.0.0</Text>
           <Text style={styles.appDescription}>
             Sistema de Gestão Financeira e Fiscal para Microempreendedores e Contadores.
           </Text>
@@ -151,13 +150,6 @@ export default function Account() {
           onPress={handleLogoutConfirm}
           variant="secondary"
           style={styles.logoutButton}
-        />
-
-        <Button
-          title="Voltar"
-          onPress={() => router.back()}
-          variant="outline"
-          style={{ marginBottom: 30 }}
         />
       </ScrollView>
     </View>
@@ -318,6 +310,6 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     backgroundColor: '#e74c3c',
-    marginBottom: 12,
+    marginBottom: 30,
   },
 });

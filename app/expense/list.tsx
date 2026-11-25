@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -291,7 +291,7 @@ export default function ExpenseList() {
 
   return (
     <View style={styles.container}>
-      <Header title={pageTitle} />
+      <Header title={pageTitle} showBackButton onBack={() => router.push('/Finance')} />
       <View style={styles.content}>
         {/* <View style={styles.filterContainer}> */}
         <Input
@@ -366,12 +366,6 @@ export default function ExpenseList() {
             </View>
           </>
         )}
-
-        <Button
-          title="Voltar"
-          onPress={() => router.push('/Finance')}
-          style={{ marginTop: 16 }}
-        />
 
         {/* Modal de Edição de Despesa */}
         <Modal

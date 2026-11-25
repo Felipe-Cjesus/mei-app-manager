@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { useState } from 'react';
+import {
+    Keyboard,
+    StyleSheet,
+    Text,
+    TextInput,
+    TextInputProps,
+    View,
+} from 'react-native';
 import colors from '../theme/colors';
 
 interface InputProps extends TextInputProps {
@@ -24,6 +31,13 @@ export default function Input({ label, value, onChangeText, ...rest }: InputProp
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholderTextColor={colors.placeholder}
+        returnKeyType={rest.returnKeyType || 'done'}
+        onSubmitEditing={(e) => {
+          Keyboard.dismiss();
+          if (rest.onSubmitEditing) {
+            rest.onSubmitEditing(e);
+          }
+        }}
         {...rest}
       />
     </View>

@@ -1,8 +1,17 @@
 import { format } from 'date-fns';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import {
+    Keyboard,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
@@ -44,7 +53,11 @@ export default function CreateExpense() {
       const fileImp = result.assets[0];
 
       if (fileImp.size && fileImp.size > 2 * 1024 * 1024) {
-        Alert.alert('Erro', 'O arquivo deve ter no máximo 2MB.');
+        Toast.show({
+          type: 'error',
+          text1: 'Arquivo muito grande',
+          text2: 'O arquivo deve ter no máximo 2MB.',
+        });
         return;
       }
 
@@ -89,7 +102,11 @@ export default function CreateExpense() {
       await api.post('/expenses', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      Alert.alert('Sucesso', 'Despesa cadastrada com sucesso!');
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Despesa cadastrada com sucesso ✅',
+      });
       setDescription('');
       setAmount('');
       setDate(new Date());
@@ -97,7 +114,11 @@ export default function CreateExpense() {
       setFile(null);
     } catch (error) {
       console.error('Erro ao salvar despesa:', error);
-      Alert.alert('Erro', 'Não foi possível salvar a despesa.');
+      Toast.show({
+        type: 'error',
+        text1: 'Erro!',
+        text2: 'Não foi possível salvar a despesa.',
+      });
     }
   };
 
@@ -108,56 +129,50 @@ export default function CreateExpense() {
 
   return (
     <View style={styles.container}>
-      <Header title={pageTitle} />
-      <View style={styles.content}>
-        <Text style={styles.title}>Nova Despesa</Text>
+      <Header title={pageTitle} showBackButton onBack={() => router.push('/Finance')} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+          <Text style={styles.title}>Nova Despesa</Text>
 
-        <Input
-          label="Descrição"
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Ex: Pagamento de despesa"
-        />
+          <Input
+            label="Descrição"
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Ex: Pagamento de despesa"
+          />
 
-        <Input
-          label="Valor (R$)"
-          value={amount}
-          onChangeText={(text) => setAmount(maskCurrency(text))}
-          placeholder="R$ 0,00"
-          keyboardType="numeric"
-        />
+          <Input
+            label="Valor (R$)"
+            value={amount}
+            onChangeText={(text) => setAmount(maskCurrency(text))}
+            placeholder="R$ 0,00"
+            keyboardType="numeric"
+          />
 
-        <DateInput
-          label="Data de recebimento"
-          value={date}
-          onChange={setDate}
-        />
+          <DateInput
+            label="Data de recebimento"
+            value={date}
+            onChange={setDate}
+          />
 
-        {/* <Text style={styles.label}>Tipo</Text>
-        <View style={styles.pickerContainer}>
-          <Picker selectedValue={type} onValueChange={(value) => setType(value)}>
-            <Picker.Item label="Manual" value="Manual" style={styles.pickerItem}/>
-            <Picker.Item label="Nota fiscal" value="Nota fiscal" style={styles.pickerItem}/>
-          </Picker>
-        </View> */}
+          <ToggleType value={type} onChange={setType} />
 
-        <ToggleType value={type} onChange={setType} />
+          <TouchableOpacity style={styles.fileButton} onPress={handlePickFile}>
+            <Text style={styles.fileButtonText}>
+              {file ? `📎 ${file.name}` : 'Selecionar arquivo 📎'}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.fileButton} onPress={handlePickFile}>
-          <Text style={styles.fileButtonText}>
-            {file ? `📎 ${file.name}` : 'Selecionar arquivo 📎'}
-          </Text>
-        </TouchableOpacity>
-
-        <Button title="Salvar" 
-                onPress={handleSubmit} 
-                style={{ marginTop: 16 }} />
-
-        <Button title="Voltar" 
-                onPress={() => router.push('/Finance')} 
-                variant="outline" 
-                style={{ marginTop: 16 }} />
-      </View>
+          <Button title="Salvar" 
+                  onPress={handleSubmit} 
+                  style={{ marginTop: 16 }} />
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </View>
   );
 }
@@ -169,7 +184,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 24,
+    paddingBottom: 48,
   },
   title: {
     fontSize: 22,

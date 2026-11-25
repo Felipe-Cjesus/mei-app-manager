@@ -1,66 +1,90 @@
-// components/Header.tsx
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+// components/HeaderSecundary.tsx
+import Feather from '@expo/vector-icons/Feather';
+import { useRouter } from 'expo-router';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from '../theme/colors';
 
 type HeaderProps = {
   title: string;
+  showBackButton?: boolean;
+  onBack?: () => void;
   onNotificationPress?: () => void;
   onSettingsPress?: () => void;
 };
 
 export default function Header({
   title,
-  onNotificationPress,
-  onSettingsPress,
+  showBackButton = false,
+  onBack,
 }: HeaderProps) {
+  const router = useRouter();
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
+    }
+  };
 
   return (
     <View style={styles.container}>
-        <Text style={styles.title}>{title}</Text>
-        {/* <View style={styles.icons}>
-          <TouchableOpacity onPress={onNotificationPress} style={styles.iconButton}>
-            <Feather name="bell" size={22} color="#fff" />
+      <View style={styles.topRow}>
+        {showBackButton ? (
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Feather name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={onSettingsPress} style={styles.iconButton}>
-            <Feather name="user" size={22} color="#fff" />
-          </TouchableOpacity>
-        </View> */}
-        <View style={styles.topRow}>
+        ) : (
+          <View style={styles.placeholder} />
+        )}
+
+        <Text style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
+
+        <View style={styles.placeholder} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-   container: {
+  container: {
     backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingBottom: 50,
-    paddingHorizontal: 24,
+    paddingTop: 54,
+    paddingBottom: 24,
+    paddingHorizontal: 16,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
-  text: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  icons: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  iconButton: {
-    marginLeft: 12,
-  },
   topRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
-    alignSelf: 'center',
-    fontSize: 24,
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
+    marginHorizontal: 8,
+  },
+  placeholder: {
+    width: 40,
+    height: 40,
   },
 });
