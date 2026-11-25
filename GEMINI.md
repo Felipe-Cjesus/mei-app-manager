@@ -73,6 +73,9 @@ Concluímos integralmente a **Fase 1** (Correções de Inconsistências Crítica
 3. **Persistência da Empresa Ativa**:
    * *Decisão*: Salvar o ID da empresa ativa no `AsyncStorage`.
    * *Motivo*: Quando o usuário fecha e reabre o app, ele continua no mesmo cliente que estava visualizando.
+4. **Infraestrutura de Homologação Gratuita (Render + Aiven.io + EAS)**:
+   * *Decisão*: Utilizar **Render.com** para a API Laravel 11 e **Aiven.io** para o banco MySQL 8.0 (5 GB gratuitos perpétuos, sem exigência de cartão de crédito).
+   * *Motivo*: Compatibilidade direta 100% nativa com as migrations e queries brutas do Laravel (ex: `MONTH()` no `ReportController`). O Neon.tech foi descartado por ser exclusivamente PostgreSQL, o que exigiria refatoração de SQL e migrations. Para distribuição de testes do app, utilizar **Expo EAS Build** (30 builds mensais gratuitos para gerar APK Android).
 
 ---
 
@@ -102,12 +105,19 @@ Lista priorizada para as próximas sessões:
 - [ ] **Máscaras de Entrada**:
   - Adicionar máscaras de CNPJ (`00.000.000/0000-00`), Moeda (`R$ 0,00`) e Referência (`MM/AAAA`).
 
-### 📌 Fase 4: Alinhamento com o Backend (`mei-api`)
-- [ ] No repositório Laravel:
-  - Alterar `EnterpriseController@index` de `->first()` para `->get()` para listar todas as empresas do usuário.
-  - Criar migrations adicionando a coluna `enterprise_id` nas tabelas `incomes`, `expenses`, `invoices` e `das_payments`.
-  - Atualizar os controllers para filtrar queries por `enterprise_id`.
-- [ ] No Frontend:
-  - Configurar `.env` com `EXPO_PUBLIC_API_URL` em `services/api.ts`.
+### 📌 Fase 4: Homologação Online & Infraestrutura
+- [ ] **Banco de Dados & Hospedagem Gratuita**:
+  - Criar instância gratuita do MySQL no **Aiven.io** (5 GB perpétuos).
+  - Fazer deploy do repositório da API Laravel no **Render.com** com variáveis de ambiente conectadas ao Aiven.io.
+- [x] **No repositório Laravel (`mei-api`) - Alinhamento Multi-empresa Concluído ✅**:
+  - Alterado `EnterpriseController@index` de `->first()` para `->get()` para listar todas as empresas do usuário.
+  - Criada migration adicionando a coluna `enterprise_id` nas tabelas `incomes`, `expenses`, `invoices` e `das_payments`.
+  - Criada migration adicionando `enterprise_id` na tabela `alerts`.
+  - Atualizado comando `GenerateAlerts` para cálculo de faturamento individual por empresa MEI (eliminando falsos positivos de soma de múltiplos CNPJs) e vinculando alertas de DAS à empresa correspondente.
+  - Atualizados os controllers para filtrar queries e validar permissões por `enterprise_id`.
+  - Suíte de testes `MultiEnterpriseTest.php` com 12 testes e 59 assertions passando 100%.
+- [ ] **No Frontend (`mei-app-manager`)**:
+  - Configurar `.env` com `EXPO_PUBLIC_API_URL` apontando para a API no Render.
+  - Configurar `eas.json` para compilar APKs de homologação via EAS Build.
   - Implementar chamada a `POST /logout` para revogar token no Sanctum ao deslogar.
 

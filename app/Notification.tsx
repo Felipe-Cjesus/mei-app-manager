@@ -13,6 +13,7 @@ import {
     View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useEnterprise } from '../contexts/EnterpriseContext';
 import api from '../services/api';
 import Button from '../src/components/Button';
 import Header from '../src/components/HeaderSecundary';
@@ -32,11 +33,13 @@ type FilterType = 'all' | 'unread' | 'das' | 'income';
 
 export default function Notification() {
   const router = useRouter();
+  const { activeEnterprise } = useEnterprise();
 
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [filterActiveEnterpriseOnly, setFilterActiveEnterpriseOnly] = useState<boolean>(true);
 
   const fetchAlerts = useCallback(async (isRefresh = false) => {
     try {
@@ -46,16 +49,22 @@ export default function Notification() {
         setLoading(true);
       }
 
-      let queryParams = '';
-      if (activeFilter === 'unread') {
-        queryParams = '?read=0';
-      } else if (activeFilter === 'das') {
-        queryParams = '?type=das';
-      } else if (activeFilter === 'income') {
-        queryParams = '?type=income';
+      const params = new URLSearchParams();
+
+      if (filterActiveEnterpriseOnly && activeEnterprise?.id) {
+        params.append('enterprise_id', String(activeEnterprise.id));
       }
 
-      const response = await api.get('/alerts' + queryParams);
+      if (activeFilter === 'unread') {
+        params.append('read', '0');
+      } else if (activeFilter === 'das') {
+        params.append('type', 'das');
+      } else if (activeFilter === 'income') {
+        params.append('type', 'income');
+      }
+
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await api.get('/alerts' + queryString);
       const data: AlertItem[] = response.data?.data || [];
       setAlerts(data);
     } catch (error) {
@@ -69,7 +78,7 @@ export default function Notification() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [activeFilter]);
+  }, [activeFilter, filterActiveEnterpriseOnly, activeEnterprise?.id]);
 
   useEffect(() => {
     fetchAlerts();
@@ -139,6 +148,58 @@ export default function Notification() {
       <Header title="Notificações & Alertas 🔔" />
 
       <View style={styles.content}>
+        {/* Filtro de Escopo: Empresa Ativa vs Todas as Empresas */}
+        {activeEnterprise && (
+          <View style={styles.scopeContainer}>
+            <TouchableOpacity
+              style={[
+                styles.scopeChip,
+                filterActiveEnterpriseOnly && styles.scopeChipActive,
+              ]}
+              onPress={() => setFilterActiveEnterpriseOnly(true)}
+            >
+              <Feather
+                name="briefcase"
+                size={13}
+                color={filterActiveEnterpriseOnly ? '#fff' : colors.primary}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={[
+                  styles.scopeChipText,
+                  filterActiveEnterpriseOnly && styles.scopeChipTextActive,
+                ]}
+                numberOfLines={1}
+              >
+                {activeEnterprise.company_name}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.scopeChip,
+                !filterActiveEnterpriseOnly && styles.scopeChipActive,
+              ]}
+              onPress={() => setFilterActiveEnterpriseOnly(false)}
+            >
+              <Feather
+                name="globe"
+                size={13}
+                color={!filterActiveEnterpriseOnly ? '#fff' : '#666'}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={[
+                  styles.scopeChipText,
+                  !filterActiveEnterpriseOnly && styles.scopeChipTextActive,
+                ]}
+              >
+                Todas as Empresas
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Barra de Filtros por Categoria */}
         <View style={styles.filterBar}>
           <TouchableOpacity
@@ -297,6 +358,39 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 16,
+  },
+  scopeContainer: {
+    flexDirection: 'row',
+    marginBottom: 12,
+    gap: 8,
+    backgroundColor: '#eef2f6',
+    padding: 4,
+    borderRadius: 24,
+  },
+  scopeChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+  },
+  scopeChipActive: {
+    backgroundColor: colors.primary,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  scopeChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#555',
+  },
+  scopeChipTextActive: {
+    color: '#fff',
   },
   filterBar: {
     flexDirection: 'row',
