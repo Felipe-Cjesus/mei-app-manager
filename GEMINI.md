@@ -40,6 +40,12 @@ Arquivo de contexto persistente para transferências de sessão e recuperação 
 Concluímos integralmente a **Fase 1** (Correções de Inconsistências Críticas e Bugs), o **Seletor Global de Empresas (Multi-tenant Reativo)**, a **Fase 2** (Telas Faltantes e Recursos Pendentes) e a **Fase 3** (Dashboard e Inteligência de Negócio MEI).
 
 ### Arquivos Criados ou Alterados Recentemente (Fase 3 & Expo SDK 58):
+* **Validação Obrigatória de Empresa (Backend & Frontend)**:
+  * `app/Http/Controllers/IncomeController.php`, `ExpenseController.php`, `InvoiceController.php`, `DasPaymentController.php`: Regra de validação alterada de `'nullable'` para `'required'` na criação e `'sometimes', 'required'` na atualização, com garantia de pertencimento ao usuário logado (`Rule::exists('enterprises', 'id')->where(...)`). Tentativas de registrar sem empresa agora retornam HTTP 422 Unprocessable Entity.
+  * `tests/Feature/MultiEnterpriseTest.php`: Atualizado teste `test_enterprise_id_is_required_for_financial_and_invoice_records` cobrindo a rejeição (422) de lançamentos de Receita, Despesa, NF e DAS sem empresa. 12 testes passando 100% com 69 asserções.
+  * `app/income/create.tsx`, `app/expense/create.tsx`, `app/das/create.tsx`: Adicionada verificação prévia no `handleSubmit` para bloquear submissão se `!activeEnterprise?.id`, Toast de erro explicativo, redirecionamento para `/Enterprise`, banner visual amigável avisando sobre a necessidade de empresa com botão de cadastro rápido e badge contextual indicando a empresa ativa vinculada ao lançamento.
+  * `app/(tabs)/Invoice.tsx`: Bloqueio no botão "Emitir / Incluir NF" e no salvamento do modal se não houver empresa selecionada, aviso em banner e badge da empresa ativa.
+  * `app/(tabs)/Finance.tsx`: Interceptação dos botões "Incluir" (Receita, Despesa e DAS) com Toast e redirecionamento caso não haja empresa ativa, além de banner de alerta orientando o cadastro.
 * `src/components/CustomToast.tsx` e `app/_layout.tsx`: Redesenhado o componente de Toast com card flutuante moderno, barra de destaque colorida (verde, vermelho, azul), ícones contextuais e tipografia refinada.
 * `app/expense/create.tsx`: Substituído o legado `Alert.alert` por chamadas a `Toast.show` no salvamento e validação de despesas.
 * `src/components/DateInput.tsx`: Corrigido o bug de foco automático indevido ao fechar o seletor de data, garantindo a desativação do teclado e desfoque prévio dos campos de texto antes e depois de abrir o modal.
@@ -104,6 +110,9 @@ Concluímos integralmente a **Fase 1** (Correções de Inconsistências Crítica
 4. **Infraestrutura de Homologação Gratuita (Render + Aiven.io + EAS)**:
    * *Decisão*: Utilizar **Render.com** para a API Laravel 11 e **Aiven.io** para o banco MySQL 8.0 (5 GB gratuitos perpétuos, sem exigência de cartão de crédito).
    * *Motivo*: Compatibilidade direta 100% nativa com as migrations e queries brutas do Laravel (ex: `MONTH()` no `ReportController`). O Neon.tech foi descartado por ser exclusivamente PostgreSQL, o que exigiria refatoração de SQL e migrations. Para distribuição de testes do app, utilizar **Expo EAS Build** (30 builds mensais gratuitos para gerar APK Android).
+5. **Obrigatoriedade de Empresa em Ambos os Lados (Backend e Frontend)**:
+   * *Decisão*: Validar estritamente o vínculo de empresa (`enterprise_id`) tanto no backend Laravel quanto no aplicativo React Native.
+   * *Motivo*: O backend atua como autoridade máxima de segurança e integridade referencial do banco de dados (Single Source of Truth), impedindo registros órfãos com `enterprise_id = NULL` que quebrariam os alertas do MEI e os cálculos do termômetro de faturamento. O frontend fornece uma experiência de usuário (UX) excelente e proativa, bloqueando o envio antes da chamada de rede, exibindo banners de aviso com botão de ação rápida para cadastrar empresa e chips visuais informando a qual CNPJ o lançamento pertence.
 
 ---
 

@@ -1,3 +1,4 @@
+import Feather from '@expo/vector-icons/Feather';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -6,6 +7,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
@@ -30,6 +32,16 @@ export default function CreateIncome() {
   const pageTitle = 'Inclusão de Receita';
 
   const handleSubmit = () => {
+    // Validar se há empresa ativa selecionada
+    if (!activeEnterprise?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Empresa Obrigatória',
+        text2: 'Cadastre ou selecione uma empresa antes de registrar receitas.',
+      });
+      router.push('/Enterprise');
+      return;
+    }
 
     // Validar campos
     if (!description || !amount || !date) {
@@ -41,13 +53,13 @@ export default function CreateIncome() {
       return;
     }
 
-    // Enviar dados para API
+    // Enviar dados para API com enterprise_id obrigatório
     const data = {
       description,
       amount: currencyToNumber(amount),
       date: formatDateToDatabase(date),
       received,
-      ...(activeEnterprise?.id ? { enterprise_id: activeEnterprise.id } : {}),
+      enterprise_id: activeEnterprise.id,
     };
 
     // Enviar dados para a API usando axios
@@ -56,7 +68,7 @@ export default function CreateIncome() {
       Toast.show({
         type: 'success',
         text1: 'Sucesso!',
-        text2: 'Dados salvos com sucesso ✅',
+        text2: 'Receita cadastrada com sucesso ✅',
       });
 
       // Limpar campos
@@ -68,15 +80,15 @@ export default function CreateIncome() {
       console.log('📤 Dados enviados:', response.data);
     })
     .catch(error => {
+      const msg = error?.response?.data?.message || 'Ocorreu um erro ao salvar os dados.';
       Toast.show({
         type: 'error',
         text1: 'Erro!',
-        text2: 'Ocorreu um erro ao salvar os dados.',
+        text2: msg,
       });
       console.error('Erro ao enviar dados:', error);
     });
 
-    // console.log('📤 Enviando:', { description, amount, date , received});
     console.log('📤 Dados enviados:', data);
   };
 
@@ -96,6 +108,32 @@ export default function CreateIncome() {
           keyboardDismissMode="on-drag"
         >
           <Text style={styles.title}>Nova Receita</Text>
+
+          {/* Banner de alerta caso não haja empresa ativa */}
+          {!activeEnterprise ? (
+            <View style={styles.warningBanner}>
+              <Feather name="alert-triangle" size={20} color="#d97706" style={{ marginRight: 8 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.warningTitle}>Nenhuma Empresa Selecionada</Text>
+                <Text style={styles.warningText}>
+                  É necessário cadastrar ou selecionar uma empresa para registrar receitas.
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.bannerButton}
+                onPress={() => router.push('/Enterprise')}
+              >
+                <Text style={styles.bannerButtonText}>Cadastrar</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.enterpriseBadge}>
+              <Feather name="briefcase" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+              <Text style={styles.enterpriseBadgeText} numberOfLines={1}>
+                Empresa: <Text style={{ fontWeight: '700' }}>{activeEnterprise.company_name}</Text>
+              </Text>
+            </View>
+          )}
 
           <Input
             label="Descrição"
@@ -152,5 +190,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  warningTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#92400e',
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#b45309',
+    marginTop: 2,
+  },
+  bannerButton: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  bannerButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  enterpriseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  enterpriseBadgeText: {
+    fontSize: 13,
+    color: colors.primaryDark,
+    flex: 1,
   },
 });

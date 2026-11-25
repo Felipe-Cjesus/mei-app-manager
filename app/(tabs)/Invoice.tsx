@@ -3,19 +3,20 @@ import Feather from '@expo/vector-icons/Feather';
 import { format } from 'date-fns';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Linking from 'expo-linking';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useEnterprise } from '../../contexts/EnterpriseContext';
@@ -37,6 +38,7 @@ type InvoiceItem = {
 };
 
 export default function Invoice() {
+  const router = useRouter();
   const { activeEnterprise } = useEnterprise();
 
   const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
@@ -51,6 +53,19 @@ export default function Invoice() {
   // Modal de inclusão de Nota Fiscal
   const [modalVisible, setModalVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const handleOpenCreateModal = () => {
+    if (!activeEnterprise?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Empresa Obrigatória',
+        text2: 'Cadastre ou selecione uma empresa antes de emitir ou incluir notas fiscais.',
+      });
+      router.push('/Enterprise');
+      return;
+    }
+    setModalVisible(true);
+  };
 
   // Campos do formulário
   const [number, setNumber] = useState('');
@@ -134,6 +149,17 @@ export default function Invoice() {
   };
 
   const handleCreateInvoice = async () => {
+    if (!activeEnterprise?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Empresa Obrigatória',
+        text2: 'Cadastre ou selecione uma empresa antes de cadastrar a nota fiscal.',
+      });
+      setModalVisible(false);
+      router.push('/Enterprise');
+      return;
+    }
+
     if (!number.trim() || !value.trim() || !description.trim()) {
       Toast.show({
         type: 'error',
@@ -161,10 +187,7 @@ export default function Invoice() {
       formData.append('issue_date', formatDateToDatabase(issueDate));
       formData.append('value', String(cleanValue));
       formData.append('description', description.trim());
-
-      if (activeEnterprise?.id) {
-        formData.append('enterprise_id', String(activeEnterprise.id));
-      }
+      formData.append('enterprise_id', String(activeEnterprise.id));
 
       if (file) {
         formData.append('file', {
@@ -259,11 +282,37 @@ export default function Invoice() {
       <Header title="Notas Fiscais 📄" />
 
       <View style={styles.content}>
+        {/* Banner de alerta caso não haja empresa ativa */}
+        {!activeEnterprise ? (
+          <View style={styles.warningBanner}>
+            <Feather name="alert-triangle" size={20} color="#d97706" style={{ marginRight: 8 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.warningTitle}>Nenhuma Empresa Selecionada</Text>
+              <Text style={styles.warningText}>
+                Selecione ou cadastre uma empresa para gerenciar e emitir notas fiscais.
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.bannerButton}
+              onPress={() => router.push('/Enterprise')}
+            >
+              <Text style={styles.bannerButtonText}>Cadastrar</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.enterpriseBadge}>
+            <Feather name="briefcase" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+            <Text style={styles.enterpriseBadgeText} numberOfLines={1}>
+              Empresa ativa: <Text style={{ fontWeight: '700' }}>{activeEnterprise.company_name}</Text>
+            </Text>
+          </View>
+        )}
+
         {/* Barra Superior de Ações e Filtro */}
         <View style={styles.topActionsRow}>
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => setModalVisible(true)}
+            onPress={handleOpenCreateModal}
           >
             <Feather name="plus-circle" size={18} color="#fff" style={{ marginRight: 6 }} />
             <Text style={styles.addButtonText}>Emitir / Incluir NF</Text>
@@ -393,6 +442,15 @@ export default function Invoice() {
                 <Feather name="x" size={24} color="#555" />
               </TouchableOpacity>
             </View>
+
+            {activeEnterprise && (
+              <View style={[styles.enterpriseBadge, { marginBottom: 14 }]}>
+                <Feather name="briefcase" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text style={styles.enterpriseBadgeText} numberOfLines={1}>
+                  Emitindo para: <Text style={{ fontWeight: '700' }}>{activeEnterprise.company_name}</Text>
+                </Text>
+              </View>
+            )}
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <Input
@@ -707,5 +765,53 @@ const styles = StyleSheet.create({
   clearFileText: {
     fontSize: 12,
     color: '#d9534f',
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  warningTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#92400e',
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#b45309',
+    marginTop: 2,
+  },
+  bannerButton: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  bannerButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  enterpriseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  enterpriseBadgeText: {
+    fontSize: 13,
+    color: colors.primaryDark,
+    flex: 1,
   },
 });

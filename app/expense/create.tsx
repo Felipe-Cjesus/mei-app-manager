@@ -1,3 +1,4 @@
+import Feather from '@expo/vector-icons/Feather';
 import { format } from 'date-fns';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
@@ -68,6 +69,16 @@ export default function CreateExpense() {
   };
 
   const handleSubmit = async () => {
+    // Validar se há empresa ativa selecionada
+    if (!activeEnterprise?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Empresa Obrigatória',
+        text2: 'Cadastre ou selecione uma empresa antes de registrar despesas.',
+      });
+      router.push('/Enterprise');
+      return;
+    }
 
     // Validar campos
     if (!description || !amount || !date) {
@@ -84,10 +95,7 @@ export default function CreateExpense() {
     formData.append('amount', String(currencyToNumber(amount)));
     formData.append('date', formatDateToDatabase(date));
     formData.append('type', type);
-
-    if (activeEnterprise?.id) {
-      formData.append('enterprise_id', String(activeEnterprise.id));
-    }
+    formData.append('enterprise_id', String(activeEnterprise.id));
 
     if (file) {
       formData.append('file', {
@@ -112,12 +120,13 @@ export default function CreateExpense() {
       setDate(new Date());
       setType('manual');
       setFile(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar despesa:', error);
+      const msg = error?.response?.data?.message || 'Não foi possível salvar a despesa.';
       Toast.show({
         type: 'error',
         text1: 'Erro!',
-        text2: 'Não foi possível salvar a despesa.',
+        text2: msg,
       });
     }
   };
@@ -138,6 +147,32 @@ export default function CreateExpense() {
           keyboardDismissMode="on-drag"
         >
           <Text style={styles.title}>Nova Despesa</Text>
+
+          {/* Banner de alerta caso não haja empresa ativa */}
+          {!activeEnterprise ? (
+            <View style={styles.warningBanner}>
+              <Feather name="alert-triangle" size={20} color="#d97706" style={{ marginRight: 8 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.warningTitle}>Nenhuma Empresa Selecionada</Text>
+                <Text style={styles.warningText}>
+                  É necessário cadastrar ou selecionar uma empresa para registrar despesas.
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.bannerButton}
+                onPress={() => router.push('/Enterprise')}
+              >
+                <Text style={styles.bannerButtonText}>Cadastrar</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.enterpriseBadge}>
+              <Feather name="briefcase" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+              <Text style={styles.enterpriseBadgeText} numberOfLines={1}>
+                Empresa: <Text style={{ fontWeight: '700' }}>{activeEnterprise.company_name}</Text>
+              </Text>
+            </View>
+          )}
 
           <Input
             label="Descrição"
@@ -226,5 +261,53 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginTop: 20,
     alignItems: 'center',
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  warningTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#92400e',
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#b45309',
+    marginTop: 2,
+  },
+  bannerButton: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  bannerButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  enterpriseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  enterpriseBadgeText: {
+    fontSize: 13,
+    color: colors.primaryDark,
+    flex: 1,
   },
 });

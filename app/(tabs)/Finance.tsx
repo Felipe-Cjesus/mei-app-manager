@@ -1,14 +1,15 @@
-// import { Ionicons } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// import Header from '../../src/components/Header';
+import Toast from 'react-native-toast-message';
+import { useEnterprise } from '../../contexts/EnterpriseContext';
 import Header from '../../src/components/HeaderSecundary';
 import colors from '../../src/theme/colors';
 
 export default function Finance() {
   const router = useRouter();
+  const { activeEnterprise } = useEnterprise();
   const pageTitle = 'Gerenciador Financeiro 💰';
 
   const sections = [
@@ -29,18 +30,50 @@ export default function Finance() {
     },
   ] as const;
 
+  const handlePressInclude = (route: string) => {
+    if (!activeEnterprise?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Empresa Obrigatória',
+        text2: 'Cadastre ou selecione uma empresa antes de fazer novos lançamentos.',
+      });
+      router.push('/Enterprise');
+      return;
+    }
+    router.push(route as any);
+  };
+
   return (
     <View style={styles.container}>
-      {/* <Header /> */}
-      {/* <View style={styles.containerHeader}>
-        <Text style={styles.title}>Gerenciador Financeiro 💰</Text>
-        <View style={styles.topRow}>
-        </View>
-      </View> */}
-
       <Header title={pageTitle} />
 
       <View style={styles.content}>
+        {/* Banner de alerta caso não haja empresa ativa */}
+        {!activeEnterprise ? (
+          <View style={styles.warningBanner}>
+            <Feather name="alert-triangle" size={20} color="#d97706" style={{ marginRight: 8 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.warningTitle}>Nenhuma Empresa Selecionada</Text>
+              <Text style={styles.warningText}>
+                Cadastre ou selecione uma empresa para registrar receitas, despesas e guias DAS.
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.bannerButton}
+              onPress={() => router.push('/Enterprise')}
+            >
+              <Text style={styles.bannerButtonText}>Cadastrar</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.enterpriseBadge}>
+            <Feather name="briefcase" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+            <Text style={styles.enterpriseBadgeText} numberOfLines={1}>
+              Empresa ativa: <Text style={{ fontWeight: '700' }}>{activeEnterprise.company_name}</Text>
+            </Text>
+          </View>
+        )}
+
         {sections.map((section) => (
           <Section
             key={section.title}
@@ -69,7 +102,7 @@ export default function Finance() {
           <OptionCard
             icon="add-circle-outline"
             label="Incluir"
-            onPress={() => router.push(includeRoute as any)}
+            onPress={() => handlePressInclude(includeRoute)}
           />
           <OptionCard
             icon="list-outline"
@@ -104,32 +137,61 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f6fa',
   },
-  containerHeader: {
-    backgroundColor: colors.primary,
-    paddingTop: 60,
-    paddingBottom: 50,
-    paddingHorizontal: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    alignSelf: 'center',
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 20,
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 20,
+  },
+  warningTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#92400e',
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#b45309',
+    marginTop: 2,
+  },
+  bannerButton: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  bannerButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  enterpriseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  enterpriseBadgeText: {
+    fontSize: 13,
+    color: colors.primaryDark,
+    flex: 1,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,
