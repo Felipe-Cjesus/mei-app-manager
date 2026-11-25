@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEnterprise } from '../../contexts/EnterpriseContext';
@@ -12,6 +12,7 @@ import api from '../../services/api';
 import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/Header';
+import MeiThermometer from '../../src/components/MeiThermometer';
 import colors from '../../src/theme/colors';
 import Sidebar from '../Sidebar';
 
@@ -48,9 +49,13 @@ export default function Home() {
   });
 
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchSummary = useCallback(async (year = '') => {
+  const fetchSummary = useCallback(async (year = '', isRefresh = false) => {
     try {
+      if (isRefresh) {
+        setRefreshing(true);
+      }
       const params: string[] = [];
       if (year && year !== '') {
         params.push(`year=${encodeURIComponent(year)}`);
@@ -87,7 +92,7 @@ export default function Home() {
         });
       }
 
-      if (year !== '') {
+      if (year !== '' && !isRefresh) {
         Toast.show({
           type: 'success',
           text1: 'Sucesso!',
@@ -96,18 +101,19 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Erro ao buscar resumo:', error);
+    } finally {
+      setRefreshing(false);
     }
   }, [activeEnterprise?.id]);
 
   useEffect(() => {
     fetchSummary(yearReference ? formatDateToDatabase(yearReference) : '');
-  }, [fetchSummary, activeEnterprise?.id]);
+  }, [fetchSummary, activeEnterprise?.id, yearReference]);
 
   return (
     <View style={styles.wrapper}>
       <Header
         onNotificationPress={() => router.push('/Notification')}
-        // onSettingsPress={() => router.push('/Sidebar')}
         onSettingsPress={() => setSidebarVisible(true)}
       />
 
@@ -128,16 +134,27 @@ export default function Home() {
         }}
       />
 
-      <View style={styles.content}>
-        {/* <Text style={styles.sectionTitle}>Resumo {new Date().getFullYear()}</Text> */}
-        <Text style={styles.sectionTitle}>Resumo {titleYear ? titleYear : new Date().getFullYear()}</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchSummary(yearReference ? formatDateToDatabase(yearReference) : '', true)}
+            colors={[colors.primary]}
+          />
+        }
+      >
+        <Text style={styles.sectionTitle}>
+          Resumo {titleYear ? titleYear : new Date().getFullYear()}
+        </Text>
 
         <DateInput
-            placeholder="Selecionar ano de referência"
-            value={yearReference}
-            onChange={(selectedDate) => {
-                if (selectedDate) setYearReference(selectedDate);
-            }}
+          placeholder="Selecionar ano de referência"
+          value={yearReference}
+          onChange={(selectedDate) => {
+            if (selectedDate) setYearReference(selectedDate);
+          }}
         />
         <Button 
           title="Filtrar" 
@@ -155,16 +172,21 @@ export default function Home() {
           style={styles.filterButton}
         />
 
+        {/* Termômetro do Limite Anual do MEI (R$ 81.000,00) */}
+        <MeiThermometer
+          revenue={summary.income_total}
+          year={titleYear || (yearReference ? formatDateToDatabase(yearReference) : new Date().getFullYear())}
+        />
+
         <View style={styles.cardGrid}>
-          <Card icon="cash-outline" label="Receita recebida" value={formatCurrency(summary.income_total)}  />
-          <Card icon="warning-outline" label="Receita pendente" value={formatCurrency(summary.income_total_pending)}  />
+          <Card icon="cash-outline" label="Receita recebida" value={formatCurrency(summary.income_total)} />
+          <Card icon="warning-outline" label="Receita pendente" value={formatCurrency(summary.income_total_pending)} />
           <Card icon="wallet-outline" label="Despesas" value={formatCurrency(summary.expense_total + summary.daspayment_total)} />
-          {/* <Card icon="stats-chart-outline" label="Total" value={`R$ ${summary.balance.toFixed(2) || 0}`} /> */}
-          <Card icon="stats-chart-outline" label="Total" value={formatCurrency(summary.balance)} />
+          <Card icon="stats-chart-outline" label="Saldo Líquido" value={formatCurrency(summary.balance)} />
           <Card icon="documents-outline" label="Quantidade NFs" value={String(summary.invoice_quantity || 0)} />
           <Card icon="document-text-outline" label="Notas Fiscais" value={formatCurrency(summary.invoice_total || 0)} />
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -184,10 +206,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
   },
-  content: {
+  scroll: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingTop: 16,
+    paddingBottom: 40,
   },
   sectionTitle: {
     fontSize: 22,

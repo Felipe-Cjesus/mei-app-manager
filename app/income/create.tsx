@@ -11,6 +11,7 @@ import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
 import ToggleRecebido from '../../src/components/ToggleRecebido';
 import colors from '../../src/theme/colors';
+import { currencyToNumber, maskCurrency } from '../../src/utils/masks';
 
 export default function CreateIncome() {
   const { activeEnterprise } = useEnterprise();
@@ -36,7 +37,7 @@ export default function CreateIncome() {
     // Enviar dados para API
     const data = {
       description,
-      amount: parseFloat(amount.replace(',', '.')),
+      amount: currencyToNumber(amount),
       date: formatDateToDatabase(date),
       received,
       ...(activeEnterprise?.id ? { enterprise_id: activeEnterprise.id } : {}),
@@ -91,10 +92,10 @@ export default function CreateIncome() {
         />
 
         <Input
-          label="Valor"
+          label="Valor (R$)"
           value={amount}
-          onChangeText={setAmount}
-          placeholder="Ex: 3500.00"
+          onChangeText={(text) => setAmount(maskCurrency(text))}
+          placeholder="R$ 0,00"
           keyboardType="numeric"
         />
 

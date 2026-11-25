@@ -3,7 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from '../theme/colors';
 
-type StatusType = 'paid' | 'pending' | 'exempt';
+export type StatusType = 'paid' | 'pending' | 'exempt' | 'overdue';
 
 type Props = {
   value: StatusType;
@@ -54,6 +54,20 @@ export default function TogglePaymentStatus({ value, onChange }: Props) {
             ]}
           >
             Isento
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.toggleOption, value === 'overdue' && styles.active]}
+          onPress={() => onChange('overdue')}
+        >
+          <Text
+            style={[
+              styles.toggleText,
+              value === 'overdue' && styles.activeText,
+            ]}
+          >
+            Vencido
           </Text>
         </TouchableOpacity>
       </View>

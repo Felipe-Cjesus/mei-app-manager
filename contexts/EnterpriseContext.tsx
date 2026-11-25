@@ -1,6 +1,6 @@
 // contexts/EnterpriseContext.tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -37,7 +37,7 @@ export const EnterpriseProvider = ({ children }: { children: React.ReactNode }) 
   const [activeEnterprise, setActiveEnterprise] = useState<EnterpriseItem | null>(null);
   const [loadingEnterprises, setLoadingEnterprises] = useState(false);
 
-  const fetchEnterprises = async () => {
+  const fetchEnterprises = useCallback(async () => {
     if (!user) {
       setEnterprises([]);
       setActiveEnterprise(null);
@@ -82,7 +82,7 @@ export const EnterpriseProvider = ({ children }: { children: React.ReactNode }) 
     } finally {
       setLoadingEnterprises(false);
     }
-  };
+  }, [user]);
 
   const selectEnterprise = async (enterprise: EnterpriseItem) => {
     try {
@@ -100,7 +100,7 @@ export const EnterpriseProvider = ({ children }: { children: React.ReactNode }) 
       setEnterprises([]);
       setActiveEnterprise(null);
     }
-  }, [user]);
+  }, [user, fetchEnterprises]);
 
   return (
     <EnterpriseContext.Provider

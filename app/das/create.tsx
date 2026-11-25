@@ -9,8 +9,9 @@ import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
-import TogglePaymentStatus from '../../src/components/TogglePaymentStatus';
+import TogglePaymentStatus, { StatusType } from '../../src/components/TogglePaymentStatus';
 import colors from '../../src/theme/colors';
+import { currencyToNumber, maskCurrency, maskReference } from '../../src/utils/masks';
 
 export default function CreateDas() {
   const { activeEnterprise } = useEnterprise();
@@ -18,7 +19,7 @@ export default function CreateDas() {
   const [dueDate, setDueDate] = useState(new Date());
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
   const [amount, setAmount] = useState('');
-  const [status, setStatus] = useState<'paid' | 'pending' | 'exempt'>('pending');
+  const [status, setStatus] = useState<StatusType>('pending');
 
   const router = useRouter();
   const pageTitle = 'Inclusão de Guia DAS';
@@ -37,7 +38,7 @@ export default function CreateDas() {
       reference,
       due_date: formatDateToDatabase(dueDate),
       payment_date: paymentDate ? formatDateToDatabase(paymentDate) : null,
-      amount: parseFloat(amount.replace(',', '.')),
+      amount: currencyToNumber(amount),
       status,
       ...(activeEnterprise?.id ? { enterprise_id: activeEnterprise.id } : {}),
     };
@@ -81,17 +82,19 @@ export default function CreateDas() {
         <Text style={styles.title}>Nova Guia DAS</Text>
 
         <Input
-          label="Referência"
+          label="Referência (MM/AAAA)"
           value={reference}
-          onChangeText={setReference}
-          placeholder="Ex: 05/2025"
+          onChangeText={(text) => setReference(maskReference(text))}
+          placeholder="Ex: 05/2026"
+          keyboardType="numeric"
+          maxLength={7}
         />
 
         <Input
-          label="Valor"
+          label="Valor (R$)"
           value={amount}
-          onChangeText={setAmount}
-          placeholder="Ex: 250.00"
+          onChangeText={(text) => setAmount(maskCurrency(text))}
+          placeholder="R$ 0,00"
           keyboardType="numeric"
         />
 

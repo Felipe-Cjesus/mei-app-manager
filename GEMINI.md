@@ -37,9 +37,21 @@ Arquivo de contexto persistente para transferências de sessão e recuperação 
 
 ## 3. Estado Atual (Onde paramos)
 
-Concluímos integralmente a **Fase 1** (Correções de Inconsistências Críticas e Bugs), o **Seletor Global de Empresas (Multi-tenant Reativo)** e a **Fase 2** (Telas Faltantes e Recursos Pendentes).
+Concluímos integralmente a **Fase 1** (Correções de Inconsistências Críticas e Bugs), o **Seletor Global de Empresas (Multi-tenant Reativo)**, a **Fase 2** (Telas Faltantes e Recursos Pendentes) e a **Fase 3** (Dashboard e Inteligência de Negócio MEI).
 
-### Arquivos Criados ou Alterados:
+### Arquivos Criados ou Alterados Recentemente (Fase 3):
+* `src/components/MeiThermometer.tsx`: Componente visual do teto fiscal MEI (R$ 81.000,00) com barra de progresso proporcional, valores acumulados, margem restante/excedida, badges de status dinâmicos (verde, laranja e vermelho) e orientações tributárias.
+* `app/(tabs)/index.tsx`: Integrado o `MeiThermometer`, adicionado `ScrollView` com `RefreshControl` para pull-to-refresh e dependências de hooks corrigidas.
+* `app/(tabs)/Chart.tsx`: Dashboard financeiro completo com navegação por anos, KPIs anuais (Receitas, Despesas + DAS, Resultado Líquido, Margem de Lucro e NFs), gráfico de barras mensais interativo de 12 meses e card de detalhamento por mês selecionado.
+* `src/utils/masks.ts`: Módulo de máscaras e parsing numérico com suporte a CNPJ (`maskCnpj`), Moeda BRL (`maskCurrency`), Mês/Ano (`maskReference`), Data (`maskDate`) e conversor seguro para float (`currencyToNumber`).
+* `app/income/list.tsx`: Ações de edição (Modal com `PUT /incomes/{id}`) e exclusão (`DELETE /incomes/{id}` com confirmação), além de layout modernizado com action buttons nos cards.
+* `app/expense/list.tsx`: Ações de edição (Modal com `PUT /expenses/{id}` e seleção de tipo) e exclusão (`DELETE /expenses/{id}` com confirmação) nos cards.
+* `app/das/list.tsx`: Ações de edição (Modal com `PUT /das-payments/{id}` e atualização de datas/status) e exclusão (`DELETE /das-payments/{id}` com confirmação).
+* `src/components/TogglePaymentStatus.tsx`: Adicionado suporte ao status `'overdue'` (Vencido) alinhado ao backend.
+* `app/Enterprise.tsx`: Máscara automática de CNPJ aplicada no formulário.
+* `app/income/create.tsx`, `app/expense/create.tsx`, `app/das/create.tsx`: Máscaras de moeda e referência integradas nos inputs e sanitização antes do envio para a API.
+* `services/api.ts`: Variável `PRODUCTION_BASE_URL` exportada e suporte a `process.env.EXPO_PUBLIC_API_URL`.
+* `contexts/EnterpriseContext.tsx`: `fetchEnterprises` envolvido em `useCallback` eliminando warnings de hooks.
 * `app/(tabs)/Invoice.tsx`: Módulo completo de Notas Fiscais com listagem paginada por empresa e ano, métricas de faturamento e quantidade de NFs, exclusão (`DELETE /invoices/{id}`), abertura de anexo PDF/XML e modal de cadastro com upload multipart (`POST /invoices`).
 * `app/Notification.tsx`: Central de Notificações com filtros dinâmicos (Todas, Não lidas, Guia DAS, Limite MEI), marcação individual de leitura (`PUT /alerts/{id}/read`), marcação em lote, pull-to-refresh e badges temáticos.
 * `app/Account.tsx`: Perfil do usuário com avatar de iniciais, exibição da empresa ativa com link de troca rápida, atalhos do sistema, metadados de versão e fluxo de encerramento de sessão (Logout).
@@ -95,15 +107,15 @@ Lista priorizada para as próximas sessões:
 - [x] **Perfil e Conta (`app/Account.tsx`)**:
   - Exibição de informações do usuário autenticado, empresa ativa, atalhos do sistema e logout seguro.
 
-### 📌 Fase 3: Dashboard e Inteligência de Negócio MEI
-- [ ] **Termômetro do Limite Anual do MEI (R$ 81.000,00)**:
-  - Adicionar barra de progresso visual na Home comparando a receita acumulada com o teto MEI e cores dinâmicas (verde, laranja, vermelho).
-- [ ] **Gráficos Financeiros (`app/(tabs)/Chart.tsx`)**:
-  - Consumir o array de 12 meses retornado por `GET /reports/monthly` para plotar gráficos de receitas vs despesas vs DAS.
-- [ ] **Edição e Exclusão nas Listagens**:
-  - Adicionar botões de Editar e Deletar nas listagens de Receitas, Despesas e DAS.
-- [ ] **Máscaras de Entrada**:
-  - Adicionar máscaras de CNPJ (`00.000.000/0000-00`), Moeda (`R$ 0,00`) e Referência (`MM/AAAA`).
+### 📌 Fase 3: Dashboard e Inteligência de Negócio MEI (Concluída ✅)
+- [x] **Termômetro do Limite Anual do MEI (R$ 81.000,00)**:
+  - Componente dedicado `MeiThermometer.tsx` na Home exibindo teto fiscal, progresso percentual, margem restante/excedida, avisos de enquadramento tributário e cores dinâmicas (verde, laranja e vermelho).
+- [x] **Gráficos Financeiros (`app/(tabs)/Chart.tsx`)**:
+  - Dashboard completo consumindo `GET /reports/monthly`, navegação por ano, resumo anual (KPIs), gráfico interativo de barras de 12 meses (Receitas x Despesas) e detalhamento dinâmico por mês selecionado.
+- [x] **Edição e Exclusão nas Listagens**:
+  - Adicionadas ações de editar (modal interativo com `PUT`) e excluir (confirmação e `DELETE`) nas listagens de Receitas (`income/list.tsx`), Despesas (`expense/list.tsx`) e DAS (`das/list.tsx`).
+- [x] **Máscaras de Entrada (`src/utils/masks.ts`)**:
+  - Módulo reutilizável com máscaras para CNPJ (`00.000.000/0000-00`), Moeda BRL (`R$ 0,00`), Referência (`MM/AAAA`) e conversão segura para float. Aplicado em todos os cadastros e formulários de edição.
 
 ### 📌 Fase 4: Homologação Online & Infraestrutura
 - [ ] **Banco de Dados & Hospedagem Gratuita**:

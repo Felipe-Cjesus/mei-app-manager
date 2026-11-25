@@ -59,7 +59,7 @@ export default function Sidebar({
         }),
       ]).start();
     }
-  }, [visible]);
+  }, [visible, opacityAnim, slideAnim]);
 
   return (
     <Animated.View 

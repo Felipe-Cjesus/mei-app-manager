@@ -16,6 +16,7 @@ import Button from '../src/components/Button';
 import Header from '../src/components/HeaderSecundary';
 import Input from '../src/components/Input';
 import colors from '../src/theme/colors';
+import { maskCnpj } from '../src/utils/masks';
 
 export default function Enterprise() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function Enterprise() {
   const populateForm = (item: EnterpriseItem) => {
     setEditingId(item.id);
     setCompany_name(item.company_name || '');
-    setCompany_id(item.company_id || '');
+    setCompany_id(maskCnpj(item.company_id || ''));
     setState(item.state || '');
     setCity(item.city || '');
     setAddress(item.address || '');
@@ -61,7 +62,7 @@ export default function Enterprise() {
     if (activeEnterprise && !editingId) {
       populateForm(activeEnterprise);
     }
-  }, [activeEnterprise]);
+  }, [activeEnterprise, editingId]);
 
   const handleStartNewEnterprise = () => {
     setEditingId(null);
@@ -246,9 +247,10 @@ export default function Enterprise() {
             <Input
               label="CNPJ *"
               value={company_id}
-              onChangeText={setCompany_id}
+              onChangeText={(text) => setCompany_id(maskCnpj(text))}
               placeholder="00.000.000/0000-00"
               keyboardType="numeric"
+              maxLength={18}
             />
 
             <Input

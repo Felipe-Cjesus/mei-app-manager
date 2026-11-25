@@ -1,13 +1,17 @@
+import Feather from '@expo/vector-icons/Feather';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     FlatList,
+    Modal,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useEnterprise } from '../../contexts/EnterpriseContext';
@@ -16,14 +20,17 @@ import Button from '../../src/components/Button';
 import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
+import ToggleType from '../../src/components/ToggleType';
 import colors from '../../src/theme/colors';
+import { currencyToNumber, maskCurrency } from '../../src/utils/masks';
 
 type ExpenseItem = {
   id: number;
   description: string;
   amount: number;
   date: string;
-  received: boolean;
+  type?: 'manual' | 'nota_fiscal';
+  document_path?: string | null;
 };
 
 export default function ExpenseList() {
@@ -97,27 +104,35 @@ export default function ExpenseList() {
     return pages;
   };
 
-  async function fetchExpense(pageNumber = 1, date='', description='') {
+  // Estados para edição
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<ExpenseItem | null>(null);
+  const [editDescription, setEditDescription] = useState('');
+  const [editAmount, setEditAmount] = useState('');
+  const [editDate, setEditDate] = useState<Date>(new Date());
+  const [editType, setEditType] = useState<'manual' | 'nota_fiscal'>('manual');
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+
+  const fetchExpense = useCallback(async (pageNumber = 1, date = '', description = '') => {
     try {
       setLoading(true);
       const dateFormatted = date;
       const descriptionFormatted = description;
-      let dateQuery = "";
-      let descriptionQuery = "";
+      let dateQuery = '';
+      let descriptionQuery = '';
       let lgToast = false;
 
-      if(dateFormatted !== '' && dateFormatted != null) {
-        dateQuery = "&date=" + dateFormatted;
+      if (dateFormatted !== '' && dateFormatted != null) {
+        dateQuery = '&date=' + dateFormatted;
         lgToast = true;
       }
-      if(descriptionFormatted !== '') {
-        descriptionQuery = "&description=" + descriptionFormatted;
+      if (descriptionFormatted !== '') {
+        descriptionQuery = '&description=' + descriptionFormatted;
         lgToast = true;
       }
 
       const enterpriseQuery = activeEnterprise?.id ? `&enterprise_id=${activeEnterprise.id}` : '';
       const response = await api.get(`/expenses?page=${pageNumber}&perPage=${perPage}` + dateQuery + descriptionQuery + enterpriseQuery);
-    //   console.log(`/expenses?page=${pageNumber}&perPage=${perPage}`+dateQuery+descriptionQuery);
       const items: ExpenseItem[] = response.data.data.data;
       const currentPage = response.data.data.current_page;
       const last = response.data.data.last_page;
@@ -125,27 +140,105 @@ export default function ExpenseList() {
       setData(items);
       setPage(currentPage);
       setLastPage(last);
-      setNameFilter('');
-      setDateFilter(null);
 
-      if(lgToast) {
+      if (lgToast) {
         Toast.show({
           type: 'success',
           text1: 'Sucesso!',
           text2: 'Listagem atualizada com sucesso ✅',
         });
       }
-
     } catch (error) {
       console.error('Erro ao carregar despesas:', error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [activeEnterprise?.id, perPage]);
 
   useEffect(() => {
     fetchExpense(1);
-  }, [activeEnterprise?.id]);
+  }, [fetchExpense]);
+
+  const handleOpenEdit = (item: ExpenseItem) => {
+    setEditingItem(item);
+    setEditDescription(item.description);
+    setEditAmount(maskCurrency(item.amount));
+    setEditDate(new Date(item.date));
+    setEditType(item.type === 'nota_fiscal' ? 'nota_fiscal' : 'manual');
+    setEditModalVisible(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+    if (!editDescription.trim() || !editAmount.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Campos obrigatórios',
+        text2: 'Preencha a descrição e o valor.',
+      });
+      return;
+    }
+
+    try {
+      setSubmittingEdit(true);
+      await api.put(`/expenses/${editingItem.id}`, {
+        description: editDescription.trim(),
+        amount: currencyToNumber(editAmount),
+        date: formatDateToDatabase(editDate),
+        type: editType,
+      });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso!',
+        text2: 'Despesa atualizada com sucesso ✅',
+      });
+      setEditModalVisible(false);
+      setEditingItem(null);
+      fetchExpense(page, formatDateToDatabase(dateFilter), nameFilter);
+    } catch (error) {
+      console.error('Erro ao atualizar despesa:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: 'Não foi possível atualizar a despesa.',
+      });
+    } finally {
+      setSubmittingEdit(false);
+    }
+  };
+
+  const handleDelete = (id: number) => {
+    Alert.alert(
+      'Excluir Despesa',
+      'Tem certeza de que deseja excluir este lançamento de despesa?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/expenses/${id}`);
+              Toast.show({
+                type: 'success',
+                text1: 'Excluído!',
+                text2: 'Despesa excluída com sucesso ✅',
+              });
+              fetchExpense(page, formatDateToDatabase(dateFilter), nameFilter);
+            } catch (error) {
+              console.error('Erro ao excluir despesa:', error);
+              Toast.show({
+                type: 'error',
+                text1: 'Erro',
+                text2: 'Não foi possível excluir a despesa.',
+              });
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const handlePageChange = (targetPage: number) => {
     if (targetPage >= 1 && targetPage <= lastPage && targetPage !== page) {
@@ -227,30 +320,49 @@ export default function ExpenseList() {
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
                 <View style={styles.item}>
-                  <Text style={styles.desc}>{item.description}</Text>
-                  <Text style={styles.amount}>{formatCurrency(item.amount)}</Text>
-                  <Text style={styles.date}>
-                    {new Date(item.date).toLocaleDateString()}
-                  </Text>
-                  {/* <Text style={styles.date}>
-                    {item.received ? 'Recebido' : 'Pendente'}
-                  </Text> */}
+                  <View style={styles.itemHeaderRow}>
+                    <Text style={styles.desc} numberOfLines={1}>
+                      {item.description}
+                    </Text>
 
-                  {item.received ? (
-                    <Text style={styles.statusReceived}>
-                      {'Recebido'}
+                    {/* Botões de Ação: Editar e Excluir */}
+                    <View style={styles.itemActions}>
+                      <TouchableOpacity
+                        style={styles.actionIconButton}
+                        onPress={() => handleOpenEdit(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Feather name="edit-2" size={16} color={colors.primary} />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.actionIconButton}
+                        onPress={() => handleDelete(item.id)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Feather name="trash-2" size={16} color="#e74c3c" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <Text style={styles.amount}>{formatCurrency(item.amount)}</Text>
+
+                  <View style={styles.itemFooterRow}>
+                    <Text style={styles.date}>
+                      {new Date(item.date).toLocaleDateString()}
                     </Text>
-                  ) : (
-                    <Text style={styles.statusPending}>
-                      {'Pendente'}
-                    </Text>
-                  )}
-                  
+
+                    <View style={styles.typeBadge}>
+                      <Text style={styles.typeBadgeText}>
+                        {item.type === 'nota_fiscal' ? 'Nota Fiscal' : 'Manual'}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               )}
             />
             <View style={styles.paginationContainer}>
-            {renderPagination()}
+              {renderPagination()}
             </View>
           </>
         )}
@@ -260,6 +372,65 @@ export default function ExpenseList() {
           onPress={() => router.push('/Finance')}
           style={{ marginTop: 16 }}
         />
+
+        {/* Modal de Edição de Despesa */}
+        <Modal
+          visible={editModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setEditModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Editar Despesa</Text>
+                <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                  <Feather name="x" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+                <Input
+                  label="Descrição *"
+                  value={editDescription}
+                  onChangeText={setEditDescription}
+                  placeholder="Ex: Fornecedor de insumos"
+                />
+
+                <Input
+                  label="Valor (R$) *"
+                  value={editAmount}
+                  onChangeText={(text) => setEditAmount(maskCurrency(text))}
+                  placeholder="R$ 0,00"
+                  keyboardType="numeric"
+                />
+
+                <DateInput
+                  label="Data da Despesa *"
+                  value={editDate}
+                  onChange={(d) => d && setEditDate(d)}
+                />
+
+                <ToggleType value={editType} onChange={setEditType} />
+
+                <View style={styles.modalActions}>
+                  <Button
+                    title="Cancelar"
+                    variant="outline"
+                    onPress={() => setEditModalVisible(false)}
+                    style={{ flex: 1, marginRight: 8 }}
+                  />
+                  <Button
+                    title={submittingEdit ? 'Salvando...' : 'Salvar'}
+                    onPress={handleSaveEdit}
+                    disabled={submittingEdit}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </View>
     </View>
   );
@@ -291,10 +462,80 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
+  itemHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionIconButton: {
+    padding: 4,
+    borderRadius: 6,
+    backgroundColor: '#f5f7fa',
+  },
+  itemFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  typeBadge: {
+    backgroundColor: '#eef6ff',
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+  },
+  typeBadgeText: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2c3e50',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
   desc: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+    flex: 1,
+    marginRight: 8,
   },
   amount: {
     fontSize: 14,

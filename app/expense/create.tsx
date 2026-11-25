@@ -12,6 +12,7 @@ import Header from '../../src/components/HeaderSecundary';
 import Input from '../../src/components/Input';
 import ToggleType from '../../src/components/ToggleType';
 import colors from '../../src/theme/colors';
+import { currencyToNumber, maskCurrency } from '../../src/utils/masks';
 
 export default function CreateExpense() {
   const { activeEnterprise } = useEnterprise();
@@ -67,7 +68,7 @@ export default function CreateExpense() {
 
     const formData = new FormData();
     formData.append('description', description);
-    formData.append('amount', amount.replace(',', '.'));
+    formData.append('amount', String(currencyToNumber(amount)));
     formData.append('date', formatDateToDatabase(date));
     formData.append('type', type);
 
@@ -119,10 +120,10 @@ export default function CreateExpense() {
         />
 
         <Input
-          label="Valor"
+          label="Valor (R$)"
           value={amount}
-          onChangeText={setAmount}
-          placeholder="Ex: 3500.00"
+          onChangeText={(text) => setAmount(maskCurrency(text))}
+          placeholder="R$ 0,00"
           keyboardType="numeric"
         />
 
