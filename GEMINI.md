@@ -7,7 +7,7 @@ Arquivo de contexto persistente para transferências de sessão e recuperação 
 ## 1. Visão Geral e Stack
 
 * **Propósito**: Aplicativo mobile para gestão financeira e fiscal do Microempreendedor Individual (MEI), cobrindo receitas, despesas, guias DAS, notas fiscais, alertas inteligentes de faturamento e suporte a contadores autônomos que gerenciam múltiplos clientes MEI.
-* **Frontend**: React Native `0.81.4`, React `19.1.0`, Expo SDK `54.0.12`, Expo Router `v6`, TypeScript `~5.9.2`.
+* **Frontend**: React Native `0.88.1`, React `19.3.0`, Expo SDK `58.0.26`, Expo Router `v6`, TypeScript `~6.0.3`.
 * **Backend**: API Laravel 11 com autenticação via Laravel Sanctum (Tokens Bearer) e banco MySQL. Repositório: [Felipe-Cjesus/mei-api](https://github.com/Felipe-Cjesus/mei-api).
 * **Principais Dependências**:
   * Navegação: `expo-router` (baseado em arquivos), `@react-navigation/native`
@@ -39,7 +39,15 @@ Arquivo de contexto persistente para transferências de sessão e recuperação 
 
 Concluímos integralmente a **Fase 1** (Correções de Inconsistências Críticas e Bugs), o **Seletor Global de Empresas (Multi-tenant Reativo)**, a **Fase 2** (Telas Faltantes e Recursos Pendentes) e a **Fase 3** (Dashboard e Inteligência de Negócio MEI).
 
-### Arquivos Criados ou Alterados Recentemente (Fase 3):
+### Arquivos Criados ou Alterados Recentemente (Fase 3 & Expo SDK 58):
+* `app/(tabs)/index.tsx`: Substituído o seletor genérico de data e botão redundante "Filtrar" por um Seletor Anual Dedicado com botões de navegação rápida (`<` e `>`) e modal de escolha direta de ano, com atualização reativa instantânea do resumo e do termômetro.
+* `src/components/MeiThermometer.tsx`: Ajustado cabeçalho do termômetro com `flexWrap: 'wrap'`, `gap: 6` e texto conciso (`Limite Seguro`), eliminando o transbordamento horizontal fora do card em telas mobile.
+* `src/components/DateInput.tsx`: Integração com `useColorScheme()` para suporte adaptativo ao Modo Escuro (Dark Mode) do iOS (`themeVariant={isDark ? 'dark' : 'light'}` e letras brancas legíveis no tema escuro).
+* `app/_layout.tsx`: Silenciado aviso de depreciação de terceiros (`DateTimePicker: onChange is deprecated`) tanto no LogBox quanto na saída de terminal do Metro via interceptador de `console.warn`.
+* `app/(tabs)/_layout.tsx`: Migrado de `createBottomTabNavigator` manual (@react-navigation/bottom-tabs v7) para o componente nativo `<Tabs>` do `expo-router`.
+* `src/components/BottomTabBar.tsx`: Adaptado para a interface de propriedades de tab bar do Expo Router (`navigateToTab`, `emitter`, `navigation`), garantindo suporte tanto a navegação direta quanto eventos de tab.
+* `services/api.ts` e `.env`: Configurado `EXPO_PUBLIC_API_URL` com fallback para `http://192.168.0.13:8000/api` para testes no celular físico via Expo Go apontando para o Laragon local.
+* `package.json` / `app.json` / `eslint.config.js`: Atualizados para Expo SDK 58 (`expo@~58.0.26`, `react-native@0.88.1`, `react@19.3.0`), resolvendo incompatibilidade com o Expo Go do iOS.
 * `src/components/MeiThermometer.tsx`: Componente visual do teto fiscal MEI (R$ 81.000,00) com barra de progresso proporcional, valores acumulados, margem restante/excedida, badges de status dinâmicos (verde, laranja e vermelho) e orientações tributárias.
 * `app/(tabs)/index.tsx`: Integrado o `MeiThermometer`, adicionado `ScrollView` com `RefreshControl` para pull-to-refresh e dependências de hooks corrigidas.
 * `app/(tabs)/Chart.tsx`: Dashboard financeiro completo com navegação por anos, KPIs anuais (Receitas, Despesas + DAS, Resultado Líquido, Margem de Lucro e NFs), gráfico de barras mensais interativo de 12 meses e card de detalhamento por mês selecionado.

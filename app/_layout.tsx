@@ -1,10 +1,29 @@
 // app/_layout.tsx
 import { Redirect, Slot, useSegments } from 'expo-router';
-import React from 'react';
+import { LogBox } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { EnterpriseProvider } from '../contexts/EnterpriseContext';
 import Splash from '../src/components/Splash';
+
+// Suprime o warning de depreciação do onChange mantido pela lib react-native-modal-datetime-picker no terminal e LogBox
+if (__DEV__) {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('DateTimePicker: `onChange` is deprecated')
+    ) {
+      return;
+    }
+    originalWarn(...args);
+  };
+}
+
+// Ignora aviso de depreciação do onChange no DateTimePicker mantido internamente pelo react-native-modal-datetime-picker
+LogBox.ignoreLogs([
+  'DateTimePicker: `onChange` is deprecated',
+]);
 
 export default function RootLayout() {
   return (

@@ -2,9 +2,9 @@
 
 <div align="center">
 
-![React Native](https://img.shields.io/badge/React_Native-0.81.4-61DAFB?style=for-the-badge&logo=react&logoColor=white)
-![Expo](https://img.shields.io/badge/Expo_SDK-54-000020?style=for-the-badge&logo=expo&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React Native](https://img.shields.io/badge/React_Native-0.88.1-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![Expo](https://img.shields.io/badge/Expo_SDK-58-000020?style=for-the-badge&logo=expo&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Expo Router](https://img.shields.io/badge/Expo_Router-v6-black?style=for-the-badge&logo=expo&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
 
@@ -98,10 +98,10 @@ O aplicativo resolve as principais dores do microempreendedor:
 ## 🛠️ Tecnologias Utilizadas
 
 ### Frontend
-* **Core**: [React Native](https://reactnative.dev/) `0.81.4` & [React](https://react.dev/) `19.1.0`
-* **Framework**: [Expo SDK](https://expo.dev/) `54.0.12`
+* **Core**: [React Native](https://reactnative.dev/) `0.88.1` & [React](https://react.dev/) `19.3.0`
+* **Framework**: [Expo SDK](https://expo.dev/) `58.0.26`
 * **Roteamento**: [Expo Router](https://docs.expo.dev/router/introduction/) `v6` (baseado em arquivos)
-* **Tipagem**: [TypeScript](https://www.typescriptlang.org/) `~5.9.2`
+* **Tipagem**: [TypeScript](https://www.typescriptlang.org/) `~6.0.3`
 * **Requisições HTTP**: [Axios](https://axios-http.com/) com suporte a `process.env.EXPO_PUBLIC_API_URL`
 * **Armazenamento Seguro e Cache**:
   * `expo-secure-store`: Armazenamento seguro de tokens JWT/Sanctum

@@ -1,11 +1,11 @@
 // services/api.ts
 import axios from 'axios';
 
-export const PRODUCTION_BASE_URL = 'https://mei-api-production.up.railway.app/api'; 
-export const DEVELOPMENT_BASE_URL = 'https://8e8948e40bfd.ngrok-free.app/api';
+// Em desenvolvimento local no celular/Expo Go, utilize o IP da máquina na mesma rede Wi-Fi ou túnel ngrok
+export const DEVELOPMENT_BASE_URL = 'http://192.168.0.13:8000/api';
 
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || DEVELOPMENT_BASE_URL, 
+  baseURL: process.env.EXPO_PUBLIC_API_URL || DEVELOPMENT_BASE_URL,
   headers: {
     Accept: 'application/json',
   },

@@ -1,6 +1,5 @@
 // src/components/MeiThermometer.tsx
 import Feather from '@expo/vector-icons/Feather';
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 interface MeiThermometerProps {
@@ -21,23 +20,23 @@ export default function MeiThermometer({ revenue, year }: MeiThermometerProps) {
   // Status visual e cores dinâmicas
   let statusColor = '#27ae60'; // Verde
   let statusBg = '#eafaf1';
-  let statusText = 'Dentro do Limite Seguro';
+  let statusText = 'Limite Seguro';
   let statusIcon: 'check-circle' | 'alert-triangle' | 'alert-octagon' = 'check-circle';
 
   if (percentage >= 100) {
     statusColor = '#e74c3c'; // Vermelho
     statusBg = '#fdedec';
-    statusText = 'Limite Anual Ultrapassado!';
+    statusText = 'Limite Ultrapassado!';
     statusIcon = 'alert-octagon';
   } else if (percentage >= 80) {
     statusColor = '#e67e22'; // Laranja
     statusBg = '#fef5e7';
-    statusText = 'Atenção: 80% do Limite';
+    statusText = 'Atenção: 80%';
     statusIcon = 'alert-triangle';
   } else if (percentage >= 65) {
     statusColor = '#f39c12'; // Âmbar
     statusBg = '#fef9e7';
-    statusText = 'Atenção aos Lançamentos';
+    statusText = 'Atenção aos Gastos';
     statusIcon = 'alert-triangle';
   }
 
@@ -137,23 +136,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
     marginBottom: 12,
   },
   titleWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 1,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: '#2c3e50',
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 12,
+    alignSelf: 'center',
   },
   badgeText: {
     fontSize: 11,

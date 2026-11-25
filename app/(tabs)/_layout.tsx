@@ -1,59 +1,50 @@
-// import { Ionicons } from '@expo/vector-icons';
+// app/(tabs)/_layout.tsx
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Tabs } from 'expo-router';
 import BottomTabBar from '../../src/components/BottomTabBar';
-import Chart from './Chart';
-import Finance from './Finance';
-import Home from './index';
-import Invoice from './Invoice';
-
-const Tab = createBottomTabNavigator();
 
 export default function AppTabs() {
   return (
-    <Tab.Navigator 
+    <Tabs
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <BottomTabBar {...props} />}>
-      <Tab.Screen
-        name="Index"
-        component={Home}
+      tabBar={(props) => <BottomTabBar {...props} />}
+    >
+      <Tabs.Screen
+        name="index"
         options={{
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size }: { color: any; size: number }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Início',
         }}
       />
-      <Tab.Screen
+      <Tabs.Screen
         name="Finance"
-        component={Finance}
         options={{
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size }: { color: any; size: number }) => (
             <Ionicons name="wallet-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Financeiro',
         }}
       />
-      <Tab.Screen
+      <Tabs.Screen
         name="Invoice"
-        component={Invoice}
         options={{
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size }: { color: any; size: number }) => (
             <Ionicons name="document-text-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Notas fiscais',
         }}
       />
-      <Tab.Screen
-        name="Analytics"
-        component={Chart}
+      <Tabs.Screen
+        name="Chart"
         options={{
-          tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+          tabBarIcon: ({ color, size }: { color: any; size: number }) => (
             <Ionicons name="bar-chart-outline" size={size} color={color} />
           ),
           tabBarLabel: 'Gráficos',
         }}
       />
-    </Tab.Navigator>
+    </Tabs>
   );
 }

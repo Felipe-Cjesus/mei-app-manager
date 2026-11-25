@@ -1,7 +1,7 @@
 // components/DateInput.tsx
 import { format } from 'date-fns';
-import React, { useState } from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Platform, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import colors from '../theme/colors';
 
@@ -15,6 +15,8 @@ type DateInputProps = {
 export default function DateInput({ label, value, onChange, placeholder = 'Selecionar data' }: DateInputProps) {
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const handleConfirm = (date: Date) => {
     setPickerVisible(false);
@@ -55,7 +57,9 @@ export default function DateInput({ label, value, onChange, placeholder = 'Selec
         cancelTextIOS="Cancelar"
         display={Platform.OS === 'ios' ? 'spinner' : 'default'}
         locale="pt-BR"
-        themeVariant="dark" // ajuda no Android, limitado no iOS
+        themeVariant={isDark ? 'dark' : 'light'}
+        isDarkModeEnabled={isDark}
+        buttonTextColorIOS={colors.primary}
       />
     </View>
   );

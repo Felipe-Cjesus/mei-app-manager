@@ -1,12 +1,25 @@
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import React from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from '../theme/colors';
 
-export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+interface CustomTabBarProps {
+  state: any;
+  descriptors: any;
+  navigation?: any;
+  emitter?: any;
+  navigateToTab?: (routeKey: string) => void;
+  insets?: any;
+}
+
+export default function CustomTabBar({
+  state,
+  descriptors,
+  navigation,
+  emitter,
+  navigateToTab,
+}: CustomTabBarProps) {
   return (
     <View style={styles.container}>
-      {state.routes.map((route, index) => {
+      {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
@@ -18,14 +31,24 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         const isFocused = state.index === index;
 
         const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+          const event = emitter
+            ? emitter.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              })
+            : navigation?.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
+          if (!isFocused && !event?.defaultPrevented) {
+            if (navigateToTab) {
+              navigateToTab(route.key);
+            } else if (navigation) {
+              navigation.navigate(route.name);
+            }
           }
         };
 

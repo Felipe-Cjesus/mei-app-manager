@@ -1,41 +1,40 @@
 // app/(tabs)/index.tsx
-// import { Ionicons } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { useCallback, useEffect, useState } from 'react';
+import {
+    Modal,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEnterprise } from '../../contexts/EnterpriseContext';
 import api from '../../services/api';
-import Button from '../../src/components/Button';
-import DateInput from '../../src/components/DateInput';
 import Header from '../../src/components/Header';
 import MeiThermometer from '../../src/components/MeiThermometer';
 import colors from '../../src/theme/colors';
 import Sidebar from '../Sidebar';
 
+const AVAILABLE_YEARS = [2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030];
+
 export default function Home() {
   const router = useRouter();
   const { logout } = useAuth();
   const { activeEnterprise } = useEnterprise();
-  const [yearReference, setYearReference] = useState<Date | null>(null);
 
-  const [titleYear, setTitleYear] = useState('');
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [yearModalVisible, setYearModalVisible] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
-  };
-
-  const formatDateToDatabase = (dateString: any) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
-    return format(date, 'yyyy');
   };
 
   const [summary, setSummary] = useState({
@@ -51,22 +50,17 @@ export default function Home() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchSummary = useCallback(async (year = '', isRefresh = false) => {
+  const fetchSummary = useCallback(async (year: number, isRefresh = false) => {
     try {
       if (isRefresh) {
         setRefreshing(true);
       }
-      const params: string[] = [];
-      if (year && year !== '') {
-        params.push(`year=${encodeURIComponent(year)}`);
-      }
+      const params: string[] = [`year=${encodeURIComponent(year)}`];
       if (activeEnterprise?.id) {
         params.push(`enterprise_id=${encodeURIComponent(activeEnterprise.id)}`);
       }
 
-      const queryString = params.length > 0 ? '?' + params.join('&') : '';
-      setTitleYear(year);
-
+      const queryString = '?' + params.join('&');
       const response = await api.get('/reports/monthly' + queryString);
       const total = response.data?.data?.total;
 
@@ -91,14 +85,6 @@ export default function Home() {
           balance: balance || 0,
         });
       }
-
-      if (year !== '' && !isRefresh) {
-        Toast.show({
-          type: 'success',
-          text1: 'Sucesso!',
-          text2: 'Resumo atualizado com sucesso ✅',
-        });
-      }
     } catch (error) {
       console.error('Erro ao buscar resumo:', error);
     } finally {
@@ -107,8 +93,8 @@ export default function Home() {
   }, [activeEnterprise?.id]);
 
   useEffect(() => {
-    fetchSummary(yearReference ? formatDateToDatabase(yearReference) : '');
-  }, [fetchSummary, activeEnterprise?.id, yearReference]);
+    fetchSummary(selectedYear);
+  }, [fetchSummary, activeEnterprise?.id, selectedYear]);
 
   return (
     <View style={styles.wrapper}>
@@ -140,42 +126,46 @@ export default function Home() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => fetchSummary(yearReference ? formatDateToDatabase(yearReference) : '', true)}
+            onRefresh={() => fetchSummary(selectedYear, true)}
             colors={[colors.primary]}
           />
         }
       >
-        <Text style={styles.sectionTitle}>
-          Resumo {titleYear ? titleYear : new Date().getFullYear()}
-        </Text>
+        {/* Seletor de Ano com Navegação Rápida */}
+        <View style={styles.yearSelectorCard}>
+          <TouchableOpacity
+            style={styles.yearArrowButton}
+            onPress={() => setSelectedYear((prev) => prev - 1)}
+            activeOpacity={0.7}
+          >
+            <Feather name="chevron-left" size={24} color={colors.primary} />
+          </TouchableOpacity>
 
-        <DateInput
-          placeholder="Selecionar ano de referência"
-          value={yearReference}
-          onChange={(selectedDate) => {
-            if (selectedDate) setYearReference(selectedDate);
-          }}
-        />
-        <Button 
-          title="Filtrar" 
-          onPress={() => {
-            if (yearReference) {
-              fetchSummary(formatDateToDatabase(yearReference));
-            } else {
-              Toast.show({
-                type: 'info',
-                text1: 'Atenção',
-                text2: 'Selecione uma data para filtrar o ano.',
-              });
-            }
-          }} 
-          style={styles.filterButton}
-        />
+          <TouchableOpacity
+            style={styles.yearCenterButton}
+            onPress={() => setYearModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.yearTitle}>Resumo {selectedYear}</Text>
+            <View style={styles.yearPickerHint}>
+              <Text style={styles.yearSubtitle}>Toque para alternar ano</Text>
+              <Feather name="calendar" size={12} color="#7f8c8d" style={{ marginLeft: 4 }} />
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.yearArrowButton}
+            onPress={() => setSelectedYear((prev) => prev + 1)}
+            activeOpacity={0.7}
+          >
+            <Feather name="chevron-right" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
 
         {/* Termômetro do Limite Anual do MEI (R$ 81.000,00) */}
         <MeiThermometer
           revenue={summary.income_total}
-          year={titleYear || (yearReference ? formatDateToDatabase(yearReference) : new Date().getFullYear())}
+          year={selectedYear}
         />
 
         <View style={styles.cardGrid}>
@@ -187,6 +177,48 @@ export default function Home() {
           <Card icon="document-text-outline" label="Notas Fiscais" value={formatCurrency(summary.invoice_total || 0)} />
         </View>
       </ScrollView>
+
+      {/* Modal de Seleção de Ano */}
+      <Modal
+        visible={yearModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setYearModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setYearModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Selecione o Ano de Referência</Text>
+            <View style={styles.yearGrid}>
+              {AVAILABLE_YEARS.map((year) => {
+                const isSelected = year === selectedYear;
+                return (
+                  <TouchableOpacity
+                    key={year}
+                    style={[styles.yearItem, isSelected && styles.yearItemSelected]}
+                    onPress={() => {
+                      setSelectedYear(year);
+                      setYearModalVisible(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.yearItemText,
+                        isSelected && styles.yearItemTextSelected,
+                      ]}
+                    >
+                      {year}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -214,11 +246,45 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 40,
   },
-  sectionTitle: {
-    fontSize: 22,
+  yearSelectorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#e8edf2',
+  },
+  yearArrowButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f1f8f5',
+  },
+  yearCenterButton: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  yearTitle: {
+    fontSize: 18,
     fontWeight: '700',
-    marginBottom: 12,
-    color: '#333',
+    color: '#2c3e50',
+  },
+  yearPickerHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  yearSubtitle: {
+    fontSize: 12,
+    color: '#7f8c8d',
   },
   cardGrid: {
     flexDirection: 'row',
@@ -248,11 +314,58 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginTop: 4,
   },
-  filterButton: {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#2c3e50',
+    marginBottom: 16,
+  },
+  yearGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  yearItem: {
+    width: 80,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+  },
+  yearItemSelected: {
     backgroundColor: colors.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    marginBottom: 8,
+    borderColor: colors.primary,
+  },
+  yearItemText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  yearItemTextSelected: {
+    color: '#fff',
+    fontWeight: '700',
   },
 });
